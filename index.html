@@ -1,0 +1,707 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Papiamentu SRS + Quiz</title>
+  <style>
+    body{font-family:system-ui;margin:16px;max-width:760px}
+    .card{border:1px solid #ddd;border-radius:12px;padding:14px;margin:12px 0}
+    button{padding:10px 12px;margin:6px 6px 0 0;border-radius:10px;border:1px solid #ccc;background:#fff;cursor:pointer}
+    button.primary{border-color:#999;font-weight:700}
+    button:disabled{opacity:.55;cursor:not-allowed}
+    input,select{padding:10px;border-radius:10px;border:1px solid #ccc}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .muted{color:#666;font-size:12px}
+    .tabs{display:flex;gap:8px;margin:12px 0}
+    .tab{padding:10px 12px;border:1px solid #ccc;border-radius:10px;background:#fff;cursor:pointer}
+    .tab.active{border-color:#999;font-weight:800}
+    .pill{display:inline-block;padding:3px 8px;border:1px solid #ddd;border-radius:999px;margin:0 6px 6px 0;font-size:12px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+    .opt{width:100%;text-align:left}
+    .ok{border-color:#1a7f37}
+    .bad{border-color:#b42318}
+    .small{font-size:13px}
+    .list{max-height:280px;overflow:auto;border:1px solid #eee;border-radius:12px;padding:10px}
+    .item{padding:8px 10px;border-radius:10px}
+    .item + .item{border-top:1px solid #f2f2f2}
+    .kv{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+  </style>
+</head>
+<body>
+  <h2>Papiamentu oefenen</h2>
+  <div class="muted" id="status"></div>
+
+  <div class="tabs">
+    <div id="tabLearn" class="tab active">Woorden leren</div>
+    <div id="tabQuiz" class="tab">Quiz</div>
+  </div>
+
+  <!-- LEARN MODE UI -->
+  <div id="learnShell">
+    <div class="card">
+      <div class="row">
+        <strong>Types</strong>
+        <button id="selAllBtn" class="small">Alles</button>
+        <button id="selNoneBtn" class="small">Niets</button>
+        <button id="selCommonBtn" class="small">Basis</button>
+      </div>
+      <div id="posChecks" class="row" style="margin-top:10px"></div>
+      <div class="muted" style="margin-top:8px">
+        Deze selectie geldt ook voor de woordenlijst in het overzicht.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <strong>Due-venster</strong>
+        <label class="muted">dagen</label>
+        <input id="dueWindow" type="number" min="0" step="1" style="width:90px" />
+        <span class="muted">0 = alleen nu due</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <strong>Overzicht</strong>
+      <div id="overview" class="grid" style="margin-top:10px"></div>
+
+      <div style="margin-top:12px" class="row">
+        <strong>Woorden (front ↔ back)</strong>
+        <span class="muted">alleen binnen geselecteerde types</span>
+      </div>
+      <div id="pairs" class="list" style="margin-top:8px"></div>
+    </div>
+
+    <div id="learnView">
+      <div class="card" id="learnCard" style="display:none">
+        <div class="muted" id="learnMeta"></div>
+        <h3 id="learnFront"></h3>
+        <div id="learnBack" style="display:none;margin-top:10px"></div>
+        <div class="muted" id="learnExample" style="margin-top:10px"></div>
+
+        <div style="margin-top:12px">
+          <button id="learnRevealBtn" class="primary">Toon antwoord</button>
+          <button id="learnNextBtn">Volgende</button>
+        </div>
+
+        <div id="learnGradeBtns" style="display:none;margin-top:10px">
+          <button data-q="0">Again</button>
+          <button data-q="3">Hard</button>
+          <button data-q="4">Good</button>
+          <button data-q="5">Easy</button>
+        </div>
+      </div>
+
+      <div class="card" id="learnEmpty" style="display:none">
+        <strong>Geen kaarten in dit due-venster</strong>
+        <div class="muted" style="margin-top:6px">
+          Vink andere types aan of verhoog je due-venster (dagen).
+        </div>
+        <button id="learnTryAgainBtn" style="margin-top:10px">Opnieuw</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUIZ MODE UI (ALLES ANDERS VERDWIJNT) -->
+  <div id="quizShell" style="display:none">
+    <div class="card">
+      <div class="kv">
+        <div>
+          <strong>Quiz</strong>
+          <div class="muted">Klik het juiste Papiamentu antwoord.</div>
+        </div>
+        <div style="text-align:right">
+          <div class="pill">Correct: <span id="quizPct" class="mono">0%</span></div>
+          <div class="muted"><span id="quizCorrect">0</span>/<span id="quizTotal">0</span></div>
+        </div>
+      </div>
+      <div class="muted" style="margin-top:8px">
+        (Gebaseerd op je lokale sessie op dit apparaat.)
+      </div>
+    </div>
+
+    <div class="card" id="quizCard" style="display:none">
+      <div class="muted" id="quizMeta"></div>
+      <h3 id="quizQuestion"></h3>
+      <div id="quizOptions" style="margin-top:10px"></div>
+
+      <div id="quizFeedback" style="margin-top:10px"></div>
+
+      <div style="margin-top:12px">
+        <button id="quizNextBtn" class="primary" style="display:none">Volgende</button>
+        <button id="quizSkipBtn">Sla over</button>
+      </div>
+    </div>
+
+    <div class="card" id="quizEmpty" style="display:none">
+      <strong>Geen quizvragen beschikbaar</strong>
+      <div class="muted" style="margin-top:6px">
+        Check of er genoeg woorden geladen zijn (minstens 2).
+      </div>
+      <button id="quizTryAgainBtn" style="margin-top:10px">Opnieuw</button>
+    </div>
+  </div>
+
+<script>
+  // ===== Fixed API URL (no input field) =====
+  const API_URL = "https://script.google.com/macros/s/AKfycbxlXU7l80EPIpJJwRam1s9CdbH8PQ_PvQyftwTq55Qk51qkorrnBjwKXu2dxAp-Np_4/exec";
+
+  // ===== Local storage =====
+  const LS_KEY = "pap_srs_quiz_v3";
+  const appState = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
+
+  // data
+  let rawCards = [];
+  let cards = [];
+
+  // learn / quiz state
+  let learnCurrent = null;
+  let quizCurrent = null;
+  let quizLocked = false;
+
+  const POS_LABELS = {
+    noun: "Zelfst. naamwoord",
+    verb: "Werkwoord",
+    prep: "Voorzetsel",
+    adj: "Bijv. naamwoord",
+    adv: "Bijwoord",
+    pron: "Voornaamwoord",
+    conj: "Voegwoord",
+    phrase: "Uitdrukking",
+    other: "Overig",
+  };
+  const POS_ORDER = ["noun","verb","adj","adv","prep","pron","conj","phrase","other"];
+
+  const el = (id) => document.getElementById(id);
+  function setStatus(msg){ el("status").textContent = msg || ""; }
+
+  function now(){ return new Date(); }
+  function parseDue(x){
+    if (!x) return null;
+    const d = new Date(x);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  function normPos(p){
+    const s = String(p || "").trim().toLowerCase();
+    if (!s) return "other";
+    if (POS_LABELS[s]) return s;
+    return "other";
+  }
+  function uniq(arr){ return Array.from(new Set(arr)); }
+  function shuffle(a){
+    const arr = a.slice();
+    for (let i = arr.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+  function pickRandom(pool){
+    if (!pool.length) return null;
+    return pool[Math.floor(Math.random()*pool.length)];
+  }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[c]));
+  }
+
+  // ===== Due window (NEW FIELD + NEW DUE LOGIC) =====
+  function getDueWindowDays(){
+    const n = Number(appState.dueWindowDays ?? 0);
+    return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 0;
+  }
+
+  function setDueWindowDays(n){
+    appState.dueWindowDays = Math.max(0, Math.floor(Number(n) || 0));
+    localStorage.setItem(LS_KEY, JSON.stringify(appState));
+    el("dueWindow").value = String(appState.dueWindowDays);
+    renderOverview();
+    renderPairs();
+    if (isLearnActive()) showNextLearn();
+  }
+
+  function dueCutoff(){
+    const days = getDueWindowDays();
+    return new Date(Date.now() + days * 24*60*60*1000);
+  }
+
+  // ===== SRS (SM-2) =====
+  function updateSRS(s, q){
+    let ease = Number(s.ease ?? 2.5);
+    let interval = Number(s.interval_days ?? 0);
+    let reps = Number(s.reps ?? 0);
+    let lapses = Number(s.lapses ?? 0);
+
+    ease = Math.max(1.3, ease + (0.1 - (5-q)*(0.08 + (5-q)*0.02)));
+
+    if (q < 3){
+      reps = 0;
+      interval = 1;
+      lapses += 1;
+    } else {
+      if (reps === 0) interval = 1;
+      else if (reps === 1) interval = 6;
+      else interval = Math.round(interval * ease);
+      reps += 1;
+    }
+
+    const due = new Date(Date.now() + interval * 24*60*60*1000).toISOString();
+    return { ease, interval_days: interval, reps, lapses, due };
+  }
+
+  function mergedCard(raw){
+    const id = String(raw.id ?? raw.ID ?? raw.Id ?? "").trim() || String((raw.front||"") + "||" + (raw.back||""));
+    const local = (appState.progress && appState.progress[id]) || {};
+    const pos = normPos(raw.pos);
+
+    return {
+      ...raw,
+      id,
+      pos,
+      front: (raw.front ?? "").toString(),
+      back: (raw.back ?? "").toString(),
+      example: (raw.example ?? "").toString(),
+      tags: (raw.tags ?? "").toString(),
+      active: String(raw.active ?? "TRUE").toUpperCase() !== "FALSE",
+
+      due: local.due || raw.due || null,
+      ease: local.ease ?? raw.ease ?? 2.5,
+      interval_days: local.interval_days ?? raw.interval_days ?? 0,
+      reps: local.reps ?? raw.reps ?? 0,
+      lapses: local.lapses ?? raw.lapses ?? 0,
+    };
+  }
+
+  function saveLocalProgress(card){
+    appState.progress = appState.progress || {};
+    appState.progress[card.id] = {
+      due: card.due,
+      ease: card.ease,
+      interval_days: card.interval_days,
+      reps: card.reps,
+      lapses: card.lapses,
+    };
+    localStorage.setItem(LS_KEY, JSON.stringify(appState));
+  }
+
+  // ===== POS selection =====
+  function getSelectedPosSet(){
+    const sel = appState.selectedPos || Object.keys(POS_LABELS);
+    return new Set(sel.map(normPos));
+  }
+
+  function setSelectedPos(list){
+    appState.selectedPos = uniq(list.map(normPos));
+    localStorage.setItem(LS_KEY, JSON.stringify(appState));
+    renderPosChecks();
+    renderOverview();
+    renderPairs();
+    if (isLearnActive()) showNextLearn();
+  }
+
+  function isAllowedByPos(card){
+    return getSelectedPosSet().has(normPos(card.pos));
+  }
+
+  // ===== Pools =====
+  function allAllowedCards(){
+    return cards.filter(c => c.active && isAllowedByPos(c));
+  }
+
+  function dueCards(){
+    const cutoff = dueCutoff();
+    return cards.filter(c => {
+      if (!c.active || !isAllowedByPos(c)) return false;
+      const d = parseDue(c.due);
+      // missing due => practice now (inside cutoff)
+      return (!d) || d <= cutoff;
+    });
+  }
+
+  // ===== UI: POS checks =====
+  function renderPosChecks(){
+    const cont = el("posChecks");
+    cont.innerHTML = "";
+
+    const sel = getSelectedPosSet();
+    const existing = rawCards.length
+      ? uniq(rawCards.map(r => normPos(r.pos))).sort((a,b)=>POS_ORDER.indexOf(a)-POS_ORDER.indexOf(b))
+      : POS_ORDER;
+
+    existing.forEach(p => {
+      const wrap = document.createElement("label");
+      wrap.style.display = "flex";
+      wrap.style.alignItems = "center";
+      wrap.style.gap = "6px";
+      wrap.style.border = "1px solid #eee";
+      wrap.style.borderRadius = "999px";
+      wrap.style.padding = "6px 10px";
+      wrap.style.cursor = "pointer";
+
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = sel.has(p);
+      cb.onchange = () => {
+        const next = new Set(getSelectedPosSet());
+        if (cb.checked) next.add(p); else next.delete(p);
+        setSelectedPos(Array.from(next));
+      };
+
+      const txt = document.createElement("span");
+      txt.textContent = POS_LABELS[p] || p;
+
+      wrap.appendChild(cb);
+      wrap.appendChild(txt);
+      cont.appendChild(wrap);
+    });
+  }
+
+  // ===== UI: Overview =====
+  function renderOverview(){
+    const ov = el("overview");
+    ov.innerHTML = "";
+    if (!cards.length){
+      ov.innerHTML = `<div class="muted">Laden…</div>`;
+      return;
+    }
+
+    const cutoff = dueCutoff();
+    const counts = {};
+    const due = {};
+    const sel = getSelectedPosSet();
+
+    cards.filter(c => c.active).forEach(c => {
+      const p = normPos(c.pos);
+      counts[p] = (counts[p] || 0) + 1;
+
+      if (sel.has(p)) {
+        const d = parseDue(c.due);
+        if (!d || d <= cutoff) due[p] = (due[p] || 0) + 1;
+      }
+    });
+
+    const keys = uniq(Object.keys(counts)).sort((a,b)=>POS_ORDER.indexOf(a)-POS_ORDER.indexOf(b));
+
+    const totalActive = cards.filter(c => c.active).length;
+    const totalAllowed = allAllowedCards().length;
+    const totalDue = dueCards().length;
+
+    const summary = document.createElement("div");
+    summary.className = "card";
+    summary.style.margin = "0";
+    summary.innerHTML = `
+      <strong>Totaal</strong>
+      <div class="small" style="margin-top:6px">
+        Actief: <b>${totalActive}</b><br/>
+        Binnen selectie: <b>${totalAllowed}</b><br/>
+        In due-venster (≤ ${cutoff.toISOString().slice(0,10)}): <b>${totalDue}</b>
+      </div>
+    `;
+    ov.appendChild(summary);
+
+    keys.forEach(p => {
+      const box = document.createElement("div");
+      box.className = "card";
+      box.style.margin = "0";
+      const allowed = sel.has(p);
+
+      box.innerHTML = `
+        <div class="row" style="justify-content:space-between">
+          <div><strong>${POS_LABELS[p] || p}</strong></div>
+          <div class="pill">${p}</div>
+        </div>
+        <div class="small" style="margin-top:6px">
+          Totaal: <b>${counts[p] || 0}</b><br/>
+          In due-venster: <b>${allowed ? (due[p] || 0) : 0}</b>
+        </div>
+        <div class="muted" style="margin-top:6px">${allowed ? "Geselecteerd" : "Niet geselecteerd"}</div>
+      `;
+      ov.appendChild(box);
+    });
+  }
+
+  // ===== UI: Pairs list (front ↔ back) =====
+  function renderPairs(){
+    const cont = el("pairs");
+    cont.innerHTML = "";
+    if (!cards.length){
+      cont.innerHTML = `<div class="muted">Laden…</div>`;
+      return;
+    }
+
+    const pool = allAllowedCards()
+      .filter(c => (c.front||"").trim() && (c.back||"").trim())
+      .sort((a,b) => {
+        const pa = POS_ORDER.indexOf(normPos(a.pos));
+        const pb = POS_ORDER.indexOf(normPos(b.pos));
+        if (pa !== pb) return pa - pb;
+        return String(a.front).localeCompare(String(b.front));
+      });
+
+    if (!pool.length){
+      cont.innerHTML = `<div class="muted">Geen woorden binnen selectie.</div>`;
+      return;
+    }
+
+    // Show up to 200 to keep it snappy
+    pool.slice(0, 200).forEach(c => {
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `
+        <div class="muted">${POS_LABELS[normPos(c.pos)] || c.pos}</div>
+        <div><b>${escapeHtml(c.front)}</b> ↔ ${escapeHtml(c.back)}</div>
+      `;
+      cont.appendChild(div);
+    });
+
+    if (pool.length > 200){
+      const more = document.createElement("div");
+      more.className = "muted";
+      more.style.padding = "8px 10px";
+      more.textContent = `… en nog ${pool.length - 200} meer`;
+      cont.appendChild(more);
+    }
+  }
+
+  // ===== LEARN =====
+  function showLearnCard(c){
+    learnCurrent = c;
+    el("learnEmpty").style.display = "none";
+    el("learnCard").style.display = "block";
+
+    el("learnFront").textContent = c.front || "";
+    el("learnBack").style.display = "none";
+    el("learnBack").textContent = c.back || "";
+    el("learnExample").textContent = c.example ? `Voorbeeld: ${c.example}` : "";
+
+    el("learnGradeBtns").style.display = "none";
+    el("learnRevealBtn").style.display = "inline-block";
+
+    const cutoff = dueCutoff();
+    const d = parseDue(c.due);
+    const inWindow = (!d) || (d <= cutoff);
+
+    el("learnMeta").textContent =
+      `Type: ${c.pos || "-"} • due: ${c.due || "now"} • in venster: ${inWindow ? "ja" : "nee"} • interval: ${c.interval_days}d • ease: ${Number(c.ease).toFixed(2)} • reps: ${c.reps}`;
+  }
+
+  function showLearnEmpty(){
+    learnCurrent = null;
+    el("learnCard").style.display = "none";
+    el("learnEmpty").style.display = "block";
+  }
+
+  function showNextLearn(){
+    const pool = dueCards();
+    const nxt = pickRandom(pool);
+    if (!nxt) return showLearnEmpty();
+    showLearnCard(nxt);
+  }
+
+  // ===== QUIZ + PERCENT CORRECT =====
+  function getQuizStats(){
+    appState.quiz = appState.quiz || { correct: 0, total: 0 };
+    return appState.quiz;
+  }
+  function saveQuizStats(){
+    localStorage.setItem(LS_KEY, JSON.stringify(appState));
+    renderQuizStats();
+  }
+  function renderQuizStats(){
+    const s = getQuizStats();
+    el("quizCorrect").textContent = String(s.correct || 0);
+    el("quizTotal").textContent = String(s.total || 0);
+    const pct = (s.total > 0) ? Math.round((s.correct / s.total) * 100) : 0;
+    el("quizPct").textContent = `${pct}%`;
+  }
+
+  function makeQuizQuestion(){
+    const pool = allAllowedCards().filter(c => (c.front||"").trim() && (c.back||"").trim());
+    if (pool.length < 2) return null;
+
+    const correct = pickRandom(pool);
+    if (!correct) return null;
+
+    const samePosPool = pool.filter(c => normPos(c.pos) === normPos(correct.pos) && c.id !== correct.id);
+    const decoyPool = (samePosPool.length >= 3 ? samePosPool : pool.filter(c => c.id !== correct.id));
+
+    const decoys = shuffle(decoyPool)
+      .map(c => c.back)
+      .filter(b => b && b !== correct.back);
+
+    const options = uniq([correct.back, ...decoys]).slice(0, 4);
+    return { correct, options: shuffle(options) };
+  }
+
+  function renderQuiz(q){
+    quizCurrent = q;
+    quizLocked = false;
+
+    el("quizEmpty").style.display = "none";
+    el("quizCard").style.display = "block";
+    el("quizFeedback").innerHTML = "";
+    el("quizNextBtn").style.display = "none";
+
+    el("quizMeta").textContent = `Type: ${q.correct.pos || "-"} • opties: ${Math.min(4, q.options.length)}`;
+    el("quizQuestion").textContent = q.correct.front || "";
+
+    const cont = el("quizOptions");
+    cont.innerHTML = "";
+    q.options.forEach(opt => {
+      const b = document.createElement("button");
+      b.className = "opt";
+      b.textContent = opt;
+      b.onclick = () => onQuizAnswer(opt);
+      cont.appendChild(b);
+    });
+  }
+
+  function showQuizEmpty(){
+    quizCurrent = null;
+    el("quizCard").style.display = "none";
+    el("quizEmpty").style.display = "block";
+  }
+
+  function showNextQuiz(force=false){
+    if (!force && quizLocked) return;
+    const q = makeQuizQuestion();
+    if (!q) return showQuizEmpty();
+    renderQuiz(q);
+  }
+
+  function onQuizAnswer(selected){
+    if (!quizCurrent || quizLocked) return;
+
+    const { correct } = quizCurrent;
+    const buttons = Array.from(el("quizOptions").querySelectorAll("button"));
+    buttons.forEach(b => b.disabled = true);
+
+    const stats = getQuizStats();
+    stats.total = (stats.total || 0) + 1;
+
+    if (selected === correct.back){
+      stats.correct = (stats.correct || 0) + 1;
+      saveQuizStats();
+
+      buttons.forEach(b => {
+        if (b.textContent === correct.back) b.classList.add("ok");
+      });
+      el("quizFeedback").innerHTML = `<div class="muted">✅ Goed!</div>`;
+      setTimeout(() => showNextQuiz(true), 350);
+    } else {
+      saveQuizStats();
+
+      quizLocked = true;
+      buttons.forEach(b => {
+        if (b.textContent === selected) b.classList.add("bad");
+        if (b.textContent === correct.back) b.classList.add("ok");
+      });
+
+      el("quizFeedback").innerHTML =
+        `<div class="muted">❌ Fout. Juiste antwoord: <b>${escapeHtml(correct.back)}</b></div>`;
+      el("quizNextBtn").style.display = "inline-block";
+    }
+  }
+
+  // ===== Tabs / "only quiz" behavior =====
+  function isLearnActive(){ return el("learnShell").style.display !== "none"; }
+  function isQuizActive(){ return el("quizShell").style.display !== "none"; }
+
+  function activateTab(name){
+    const learn = name === "learn";
+    el("tabLearn").classList.toggle("active", learn);
+    el("tabQuiz").classList.toggle("active", !learn);
+
+    // When quiz selected: ONLY quiz visible
+    el("learnShell").style.display = learn ? "block" : "none";
+    el("quizShell").style.display = learn ? "none" : "block";
+
+    if (learn) showNextLearn();
+    else {
+      renderQuizStats();
+      showNextQuiz(true);
+    }
+  }
+
+  el("tabLearn").onclick = () => activateTab("learn");
+  el("tabQuiz").onclick = () => activateTab("quiz");
+
+  // ===== Learn controls =====
+  el("learnRevealBtn").onclick = () => {
+    el("learnBack").style.display = "block";
+    el("learnGradeBtns").style.display = "block";
+    el("learnRevealBtn").style.display = "none";
+  };
+  el("learnNextBtn").onclick = () => showNextLearn();
+  el("learnTryAgainBtn").onclick = () => showNextLearn();
+
+  el("learnGradeBtns").addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-q]");
+    if (!btn || !learnCurrent) return;
+    const q = Number(btn.dataset.q);
+
+    const upd = updateSRS(learnCurrent, q);
+    Object.assign(learnCurrent, upd);
+    saveLocalProgress(learnCurrent);
+
+    renderOverview();
+    showNextLearn();
+  });
+
+  // ===== Quiz controls =====
+  el("quizNextBtn").onclick = () => {
+    quizLocked = false;
+    showNextQuiz(true);
+  };
+  el("quizSkipBtn").onclick = () => showNextQuiz(true);
+  el("quizTryAgainBtn").onclick = () => showNextQuiz(true);
+
+  // ===== POS selection shortcuts =====
+  el("selAllBtn").onclick = () => setSelectedPos(Object.keys(POS_LABELS));
+  el("selNoneBtn").onclick = () => setSelectedPos([]);
+  el("selCommonBtn").onclick = () => setSelectedPos(["noun","verb","prep","adj","phrase"]);
+
+  // ===== Load at start =====
+  async function loadFromSheet(){
+    setStatus("Loading…");
+    try {
+      const res = await fetch(API_URL);
+      const json = await res.json();
+      rawCards = (json.data || []).slice();
+      cards = rawCards.map(mergedCard).filter(c => c.active);
+
+      renderPosChecks();
+      renderOverview();
+      renderPairs();
+
+      setStatus(`Loaded: ${cards.length} kaarten`);
+      if (isLearnActive()) showNextLearn();
+      if (isQuizActive()) showNextQuiz(true);
+    } catch (e){
+      console.error(e);
+      setStatus("Load mislukt (check Apps Script deployment)");
+    }
+  }
+
+  // ===== Init defaults =====
+  if (!appState.selectedPos) appState.selectedPos = Object.keys(POS_LABELS);
+  if (!appState.progress) appState.progress = {};
+  if (appState.dueWindowDays === undefined) appState.dueWindowDays = 0;
+  if (!appState.quiz) appState.quiz = { correct: 0, total: 0 };
+  localStorage.setItem(LS_KEY, JSON.stringify(appState));
+
+  el("dueWindow").value = String(getDueWindowDays());
+  el("dueWindow").addEventListener("change", () => setDueWindowDays(el("dueWindow").value));
+
+  renderQuizStats();
+  renderPosChecks();
+  renderOverview();
+  renderPairs();
+
+  loadFromSheet();
+</script>
+</body>
+</html>
+
