@@ -6,7 +6,7 @@
   <title>Woorden oefenen</title>
 
   <!-- PWA -->
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#2563eb">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -25,352 +25,579 @@
       --radius:14px;
       --shadow:0 1px 2px rgba(0,0,0,.05);
     }
-
     *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-      background:var(--bg);
-      color:var(--text);
-    }
-
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
     .wrap{max-width:820px;margin:0 auto;padding:16px}
-
-    .tabs{
-      display:flex;
-      gap:8px;
-      margin:10px 0 14px;
-      flex-wrap:wrap;
-    }
-
-    .tab{
-      padding:10px 14px;
-      border:1px solid var(--border);
-      border-radius:999px;
-      background:#fff;
-      cursor:pointer;
-      font-weight:600;
-    }
-
-    .tab.active{
-      background:var(--accent-soft);
-      border-color:rgba(37,99,235,.4);
-    }
-
-    .card{
-      background:#fff;
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      padding:14px;
-      margin:12px 0;
-      box-shadow:var(--shadow);
-    }
-
+    .tabs{display:flex;gap:8px;margin:10px 0 14px;flex-wrap:wrap}
+    .tab{padding:10px 14px;border:1px solid var(--border);border-radius:999px;background:#fff;cursor:pointer;font-weight:600;box-shadow:var(--shadow);user-select:none}
+    .tab.active{background:var(--accent-soft);border-color:rgba(37,99,235,.4)}
+    .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin:12px 0;box-shadow:var(--shadow)}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
     .muted{color:var(--muted);font-size:12px}
-    .small{font-size:13px}
-
-    button{
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid var(--border);
-      background:#fff;
-      font-weight:600;
-      cursor:pointer;
-    }
-
-    button.primary{
-      background:var(--accent-soft);
-      border-color:rgba(37,99,235,.4);
-    }
-
-    button:disabled{opacity:.5}
-
-    input{
-      padding:10px 12px;
-      border-radius:12px;
-      border:1px solid var(--border);
-    }
-
-    .list{
-      max-height:62vh;
-      overflow:auto;
-      -webkit-overflow-scrolling:touch;
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      padding:8px;
-      background:#fff;
-    }
-
+    button{padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:#fff;font-weight:600;cursor:pointer}
+    button.primary{background:var(--accent-soft);border-color:rgba(37,99,235,.4)}
+    button:disabled{opacity:.55;cursor:not-allowed}
+    input{padding:10px 12px;border-radius:12px;border:1px solid var(--border)}
+    .list{max-height:62vh;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;border:1px solid var(--border);border-radius:var(--radius);padding:8px;background:#fff}
     .item{padding:10px}
     .item + .item{border-top:1px solid #f3f4f6}
-
+    .pill{padding:4px 10px;border:1px solid var(--border);border-radius:999px;font-size:12px;background:#fff}
+    .chip{display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);border-radius:999px;cursor:pointer;user-select:none}
+    .chip input{margin:0}
+    .opt{width:100%;text-align:left}
     .ok{border-color:rgba(22,163,74,.5);background:rgba(22,163,74,.08)}
     .bad{border-color:rgba(220,38,38,.5);background:rgba(220,38,38,.08)}
-
-    .pill{
-      padding:4px 10px;
-      border:1px solid var(--border);
-      border-radius:999px;
-      font-size:12px;
-      background:#fff;
-    }
-
-    .chip{
-      display:flex;
-      align-items:center;
-      gap:6px;
-      padding:6px 10px;
-      border:1px solid var(--border);
-      border-radius:999px;
-      cursor:pointer;
-    }
-
-    #splash{
-      position:fixed;
-      inset:0;
-      background:#f9fafb;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      z-index:9999;
-    }
+    #splash{position:fixed;inset:0;background:#f9fafb;display:flex;align-items:center;justify-content:center;z-index:9999}
     .splash-card{text-align:center}
     .splash-title{font-size:28px;font-weight:700}
     .splash-sub{color:#6b7280;margin-top:4px}
-    .loader{
-      width:36px;height:36px;
-      border:3px solid #e5e7eb;
-      border-top-color:#2563eb;
-      border-radius:50%;
-      animation:spin 1s linear infinite;
-      margin:16px auto 0;
-    }
+    .loader{width:36px;height:36px;border:3px solid #e5e7eb;border-top-color:#2563eb;border-radius:50%;animation:spin 1s linear infinite;margin:16px auto 0}
     @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 
 <body>
-
-<div id="splash">
-  <div class="splash-card">
-    <div class="splash-title">Papiamentu</div>
-    <div class="splash-sub">Woorden oefenen</div>
-    <div class="loader"></div>
-  </div>
-</div>
-
-<div class="wrap">
-
-  <div class="tabs">
-    <div id="tabOverview" class="tab active">Woordenlijst</div>
-    <div id="tabLearn" class="tab">Oefenen</div>
-    <div id="tabQuiz" class="tab">Test jezelf</div>
-  </div>
-
-  <!-- OVERVIEW -->
-  <div id="overviewShell">
-    <div class="card">
-      <div class="row">
-        <strong>Filters</strong>
-        <button id="selAllBtn">Alles</button>
-        <button id="selNoneBtn">Niets</button>
-      </div>
-
-      <div id="posChecks" class="row" style="margin-top:10px"></div>
-
-      <div class="row" style="margin-top:12px">
-        <strong>Les</strong>
-        <input id="lessonMax" type="number" min="1" style="width:80px">
-        <span class="muted">t/m</span>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="row" style="justify-content:space-between">
-        <strong>Woorden</strong>
-        <button id="sortAZBtn">Sorteren A–Z</button>
-      </div>
-      <div id="pairs" class="list" style="margin-top:8px"></div>
+  <div id="splash">
+    <div class="splash-card">
+      <div class="splash-title">Papiamentu</div>
+      <div class="splash-sub">Woorden oefenen</div>
+      <div class="loader"></div>
     </div>
   </div>
 
-  <!-- LEARN -->
-  <div id="learnShell" style="display:none">
-    <div class="card" id="learnCard" style="display:none">
-      <div class="muted" id="learnMeta"></div>
-      <h3 id="learnFront"></h3>
-      <div id="learnBack" style="display:none;margin-top:10px"></div>
+  <div class="wrap">
+    <div class="muted" id="status"></div>
 
-      <div style="margin-top:12px">
-        <button id="learnRevealBtn" class="primary">Toon antwoord</button>
-        <button id="learnNextBtn">Volgende</button>
-      </div>
-
-      <div id="learnGradeBtns" style="display:none;margin-top:10px">
-        <button data-q="0">Again</button>
-        <button data-q="3">Hard</button>
-        <button data-q="4">Good</button>
-        <button data-q="5">Easy</button>
-      </div>
+    <div class="tabs">
+      <div id="tabOverview" class="tab active">Woordenlijst</div>
+      <div id="tabLearn" class="tab">Oefenen</div>
+      <div id="tabQuiz" class="tab">Test jezelf</div>
     </div>
 
-    <div class="card" id="learnEmpty" style="display:none">
-      Geen woorden in deze selectie.
-    </div>
-  </div>
+    <!-- OVERVIEW -->
+    <div id="overviewShell">
+      <div class="card">
+        <div class="row">
+          <strong>Filters</strong>
+          <button id="selAllBtn">Alles</button>
+          <button id="selNoneBtn">Niets</button>
+        </div>
 
-  <!-- QUIZ -->
-  <div id="quizShell" style="display:none">
-    <div class="card">
-      <div class="row" style="justify-content:space-between">
-        <strong>Quiz</strong>
-        <div>
-          <span class="pill"><span id="quizCorrect">0</span>/<span id="quizTotal">0</span></span>
-          <span class="pill"><span id="quizPct">0%</span></span>
+        <div id="posChecks" class="row" style="margin-top:10px"></div>
+
+        <div class="row" style="margin-top:12px">
+          <strong>Les</strong>
+          <input id="lessonMax" type="number" min="1" style="width:90px" />
+          <span class="muted">t/m</span>
+          <button id="sortAZBtn">Sorteren A–Z</button>
+        </div>
+
+        <div class="muted" style="margin-top:8px">
+          Filters gelden voor Woordenlijst, Oefenen en Test jezelf.
         </div>
       </div>
 
-      <button id="quizResetBtn" style="margin-top:10px">Reset score</button>
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <strong>Woorden (NL ↔ PAP)</strong>
+          <span class="muted">max 200</span>
+        </div>
+        <div id="pairs" class="list" style="margin-top:8px"></div>
+      </div>
     </div>
 
-    <div class="card" id="quizCard" style="display:none">
-      <div class="muted" id="quizMeta"></div>
-      <h3 id="quizQuestion"></h3>
-      <div id="quizOptions" style="margin-top:10px"></div>
+    <!-- LEARN -->
+    <div id="learnShell" style="display:none">
+      <div class="card" id="learnCard" style="display:none">
+        <div class="muted" id="learnMeta"></div>
+        <h3 id="learnFront" style="margin:10px 0 0"></h3>
+        <div id="learnBack" style="display:none;margin-top:10px"></div>
 
-      <div id="quizFeedback" style="margin-top:10px"></div>
+        <div style="margin-top:12px">
+          <button id="learnRevealBtn" class="primary">Toon antwoord</button>
+          <button id="learnNextBtn">Volgende</button>
+        </div>
 
-      <button id="quizNextBtn" style="display:none;margin-top:10px">Volgende</button>
+        <div id="learnGradeBtns" style="display:none;margin-top:10px">
+          <button data-q="0">Again</button>
+          <button data-q="3">Hard</button>
+          <button data-q="4">Good</button>
+          <button data-q="5">Easy</button>
+        </div>
+      </div>
+
+      <div class="card" id="learnEmpty" style="display:none">
+        <strong>Geen woorden in deze selectie</strong>
+        <div class="muted" style="margin-top:6px">Pas filters aan in Woordenlijst.</div>
+      </div>
+    </div>
+
+    <!-- QUIZ -->
+    <div id="quizShell" style="display:none">
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <strong>Quiz</strong>
+          <div class="row">
+            <span class="pill"><span id="quizCorrect">0</span>/<span id="quizTotal">0</span></span>
+            <span class="pill"><span id="quizPct">0%</span></span>
+          </div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button id="quizResetBtn">Reset score</button>
+        </div>
+        <div class="muted" style="margin-top:8px">(Score is lokaal op dit apparaat.)</div>
+      </div>
+
+      <div class="card" id="quizCard" style="display:none">
+        <div class="muted" id="quizMeta"></div>
+        <h3 id="quizQuestion" style="margin:10px 0 0"></h3>
+        <div id="quizOptions" style="margin-top:10px"></div>
+        <div id="quizFeedback" style="margin-top:10px"></div>
+
+        <div style="margin-top:12px">
+          <button id="quizNextBtn" class="primary" style="display:none">Volgende</button>
+          <button id="quizSkipBtn">Sla over</button>
+        </div>
+      </div>
+
+      <div class="card" id="quizEmpty" style="display:none">
+        <strong>Geen quizvragen beschikbaar</strong>
+        <div class="muted" style="margin-top:6px">Zorg dat er minstens 2 woorden in je selectie zitten.</div>
+      </div>
     </div>
   </div>
-</div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxlXU7l80EPIpJJwRam1s9CdbH8PQ_PvQyftwTq55Qk51qkorrnBjwKXu2dxAp-Np_4/exec";
-const LS_KEY = "papiamentu_app_v1";
+  const API_URL = "https://script.google.com/macros/s/AKfycbxlXU7l80EPIpJJwRam1s9CdbH8PQ_PvQyftwTq55Qk51qkorrnBjwKXu2dxAp-Np_4/exec";
+  const LS_KEY = "papiamentu_app_v2";
 
-let rawCards=[], cards=[], learnCurrent=null, quizCurrent=null, quizLocked=false;
-let state = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
+  let rawCards = [];
+  let cards = [];
+  let learnCurrent = null;
+  let quizCurrent = null;
+  let quizLocked = false;
 
-const POS_LABELS = {
-  noun:"Zelfst. nw", verb:"Werkwoord", adj:"Bijv. nw",
-  adv:"Bijwoord", prep:"Voorzetsel", pron:"Voornaamw.",
-  conj:"Voegwoord", phrase:"Uitdrukking", other:"Overig"
-};
+  // Local state + defaults (important!)
+  let state = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
+  if (state.lesson === undefined || state.lesson === null || state.lesson === "" || Number.isNaN(Number(state.lesson))) state.lesson = 1;
+  if (!Array.isArray(state.pos)) state.pos = []; // empty = all selected (we treat empty as all)
+  if (state.sortAZ === undefined) state.sortAZ = false;
+  if (!state.quiz) state.quiz = { correct: 0, total: 0 };
+  if (!state.activeTab) state.activeTab = "overview";
+  save();
 
-const el = id => document.getElementById(id);
-const norm = s => String(s||"").toLowerCase();
+  const POS_LABELS = {
+    noun:"Zelfst. nw", verb:"Werkwoord", adj:"Bijv. nw",
+    adv:"Bijwoord", prep:"Voorzetsel", pron:"Voornaamw.",
+    conj:"Voegwoord", phrase:"Uitdrukking", other:"Overig"
+  };
+  const POS_ORDER = ["noun","verb","adj","adv","prep","pron","conj","phrase","other"];
 
-function save(){localStorage.setItem(LS_KEY,JSON.stringify(state))}
+  const el = (id) => document.getElementById(id);
+  const norm = (s) => String(s || "").trim().toLowerCase();
 
-function activateTab(name){
-  ["overview","learn","quiz"].forEach(t=>{
-    el("tab"+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle("active",t===name);
-    el(t+"Shell").style.display = t===name?"block":"none";
-  });
-  if(name==="learn") nextLearn();
-  if(name==="quiz") nextQuiz();
-}
+  function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
 
-function load(){
-  fetch(API_URL).then(r=>r.json()).then(j=>{
-    rawCards=j.data||[];
-    cards=rawCards.filter(c=>String(c.active).toUpperCase()!=="FALSE");
-    document.getElementById("splash").style.display="none";
-    render();
-  });
-}
+  function setStatus(msg){ el("status").textContent = msg || ""; }
 
-function render(){
-  renderFilters();
-  renderPairs();
-}
+  function activateTab(name){
+    const isOverview = name === "overview";
+    const isLearn = name === "learn";
+    const isQuiz = name === "quiz";
 
-function renderFilters(){
-  const cont=el("posChecks");
-  cont.innerHTML="";
-  const types=[...new Set(cards.map(c=>norm(c.pos)))];
-  types.forEach(p=>{
-    const lab=document.createElement("label");
-    lab.className="chip";
-    const cb=document.createElement("input");
-    cb.type="checkbox";
-    cb.checked=!state.pos||state.pos.includes(p);
-    cb.onchange=()=>{
-      state.pos=state.pos||[];
-      cb.checked?state.pos.push(p):state.pos=state.pos.filter(x=>x!==p);
-      save();renderPairs();
+    el("tabOverview").classList.toggle("active", isOverview);
+    el("tabLearn").classList.toggle("active", isLearn);
+    el("tabQuiz").classList.toggle("active", isQuiz);
+
+    el("overviewShell").style.display = isOverview ? "block" : "none";
+    el("learnShell").style.display = isLearn ? "block" : "none";
+    el("quizShell").style.display = isQuiz ? "block" : "none";
+
+    state.activeTab = name;
+    save();
+
+    if (isOverview) renderPairs();
+    if (isLearn) showNextLearn();
+    if (isQuiz) { renderQuizStats(); showNextQuiz(true); }
+  }
+
+  function mergedCard(raw){
+    return {
+      ...raw,
+      id: String(raw.id ?? raw.ID ?? raw.Id ?? (raw.front + "||" + raw.back)),
+      pos: norm(raw.pos) || "other",
+      front: String(raw.front ?? ""),
+      back: String(raw.back ?? ""),
+      due: raw.due, // lesson number
+      active: String(raw.active ?? "TRUE").toUpperCase() !== "FALSE",
     };
-    lab.append(cb,document.createTextNode(" "+(POS_LABELS[p]||p)));
-    cont.appendChild(lab);
+  }
+
+  function allTypes(){
+    const types = new Set(cards.map(c => c.pos || "other"));
+    // stable order-ish
+    return Array.from(types).sort((a,b) => (POS_ORDER.indexOf(a) - POS_ORDER.indexOf(b)));
+  }
+
+  function selectedTypesSet(){
+    // state.pos empty => all types selected
+    if (!state.pos || state.pos.length === 0) return new Set(allTypes());
+    return new Set(state.pos.map(norm));
+  }
+
+  function filtered(){
+    const sel = selectedTypesSet();
+    const maxLesson = Math.max(1, Number(state.lesson || 1));
+
+    return cards.filter(c => {
+      if (!c.active) return false;
+
+      const lesson = Number(c.due ?? 1);
+      if (Number.isFinite(lesson) && lesson > maxLesson) return false;
+
+      if (!sel.has(norm(c.pos))) return false;
+
+      return (c.front || "").trim() && (c.back || "").trim();
+    });
+  }
+
+  function renderPosChecks(){
+    const cont = el("posChecks");
+    cont.innerHTML = "";
+
+    const types = allTypes();
+    const sel = selectedTypesSet();
+
+    types.forEach(p => {
+      const lab = document.createElement("label");
+      lab.className = "chip";
+
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = sel.has(p);
+      cb.onchange = () => {
+        // if state.pos empty (meaning "all"), expand it to all first
+        if (!state.pos || state.pos.length === 0) state.pos = types.slice();
+
+        if (cb.checked) {
+          if (!state.pos.includes(p)) state.pos.push(p);
+        } else {
+          state.pos = state.pos.filter(x => x !== p);
+        }
+        save();
+        renderPairs();
+      };
+
+      const txt = document.createElement("span");
+      txt.textContent = POS_LABELS[p] || p;
+
+      lab.appendChild(cb);
+      lab.appendChild(txt);
+      cont.appendChild(lab);
+    });
+  }
+
+  function updateSortButtonLabel(){
+    el("sortAZBtn").textContent = state.sortAZ ? "Sorteren: standaard" : "Sorteren A–Z";
+  }
+
+  function renderPairs(){
+    const box = el("pairs");
+    box.innerHTML = "";
+
+    const sel = selectedTypesSet();
+    const maxLesson = Math.max(1, Number(state.lesson || 1));
+
+    let arr = cards
+      .filter(c => c.active)
+      .filter(c => sel.has(norm(c.pos)))
+      .filter(c => {
+        const lesson = Number(c.due ?? 1);
+        return (!Number.isFinite(lesson) ? true : lesson <= maxLesson);
+      })
+      .filter(c => (c.front || "").trim() && (c.back || "").trim());
+
+    if (!arr.length){
+      box.innerHTML = `<div class="muted" style="padding:10px">Geen woorden binnen je filters.</div>`;
+      return;
+    }
+
+    if (state.sortAZ){
+      arr.sort((a,b)=>a.front.localeCompare(b.front, "nl", {sensitivity:"base"}));
+    } else {
+      arr.sort((a,b)=>{
+        const pa = POS_ORDER.indexOf(norm(a.pos));
+        const pb = POS_ORDER.indexOf(norm(b.pos));
+        if (pa !== pb) return pa - pb;
+        const la = Number(a.due ?? 1), lb = Number(b.due ?? 1);
+        if (Number.isFinite(la) && Number.isFinite(lb) && la !== lb) return la - lb;
+        return a.front.localeCompare(b.front, "nl", {sensitivity:"base"});
+      });
+    }
+
+    arr.slice(0, 200).forEach(c => {
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `
+        <div class="muted">${(POS_LABELS[norm(c.pos)] || c.pos)} • les ${c.due ?? "-"}</div>
+        <div><b>${escapeHtml(c.front)}</b> ↔ ${escapeHtml(c.back)}</div>
+      `;
+      box.appendChild(div);
+    });
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[c]));
+  }
+
+  // ===== Learn =====
+  function showLearnCard(c){
+    learnCurrent = c;
+
+    el("learnEmpty").style.display = "none";
+    el("learnCard").style.display = "block";
+    el("learnFront").textContent = c.front || "";
+    el("learnBack").textContent = c.back || "";
+    el("learnBack").style.display = "none";
+
+    el("learnGradeBtns").style.display = "none";
+    el("learnRevealBtn").style.display = "inline-block";
+
+    el("learnMeta").textContent = `Type: ${c.pos || "-"} • les: ${c.due ?? "-"}`;
+  }
+
+  function showLearnEmpty(){
+    learnCurrent = null;
+    el("learnCard").style.display = "none";
+    el("learnEmpty").style.display = "block";
+  }
+
+  function showNextLearn(){
+    const pool = filtered();
+    if (!pool.length) return showLearnEmpty();
+    const nxt = pool[Math.floor(Math.random() * pool.length)];
+    showLearnCard(nxt);
+  }
+
+  // ===== Quiz stats =====
+  function renderQuizStats(){
+    const s = state.quiz || { correct: 0, total: 0 };
+    el("quizCorrect").textContent = String(s.correct || 0);
+    el("quizTotal").textContent = String(s.total || 0);
+    const pct = (s.total > 0) ? Math.round((s.correct / s.total) * 100) : 0;
+    el("quizPct").textContent = `${pct}%`;
+  }
+
+  function makeQuizQuestion(){
+    const pool = filtered();
+    if (pool.length < 2) return null;
+
+    const correct = pool[Math.floor(Math.random() * pool.length)];
+    const others = pool.filter(c => c.id !== correct.id);
+
+    // decoys prefer same POS
+    const samePos = others.filter(c => norm(c.pos) === norm(correct.pos));
+    const decoyPool = (samePos.length >= 3 ? samePos : others);
+
+    const decoys = shuffle(decoyPool).map(c => c.back).filter(b => b && b !== correct.back);
+    const options = uniq([correct.back, ...decoys]).slice(0, 4);
+
+    // ensure at least 2 options
+    if (options.length < 2) return null;
+
+    return { correct, options: shuffle(options) };
+  }
+
+  function uniq(arr){ return Array.from(new Set(arr)); }
+  function shuffle(a){
+    const arr = a.slice();
+    for (let i = arr.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function renderQuiz(q){
+    quizCurrent = q;
+    quizLocked = false;
+
+    el("quizEmpty").style.display = "none";
+    el("quizCard").style.display = "block";
+    el("quizFeedback").innerHTML = "";
+    el("quizNextBtn").style.display = "none";
+
+    el("quizMeta").textContent = `Type: ${q.correct.pos || "-"} • les: ${q.correct.due ?? "-"}`;
+    el("quizQuestion").textContent = q.correct.front || "";
+
+    const cont = el("quizOptions");
+    cont.innerHTML = "";
+
+    q.options.forEach(opt => {
+      const b = document.createElement("button");
+      b.className = "opt";
+      b.textContent = opt;
+      b.onclick = () => onQuizAnswer(opt);
+      cont.appendChild(b);
+    });
+  }
+
+  function showQuizEmpty(){
+    quizCurrent = null;
+    el("quizCard").style.display = "none";
+    el("quizEmpty").style.display = "block";
+  }
+
+  function showNextQuiz(force=false){
+    if (!force && quizLocked) return;
+
+    const q = makeQuizQuestion();
+    if (!q) return showQuizEmpty();
+    renderQuiz(q);
+  }
+
+  function onQuizAnswer(selected){
+    if (!quizCurrent || quizLocked) return;
+
+    const { correct } = quizCurrent;
+    const buttons = Array.from(el("quizOptions").querySelectorAll("button"));
+    buttons.forEach(b => b.disabled = true);
+
+    state.quiz = state.quiz || { correct: 0, total: 0 };
+    state.quiz.total = (state.quiz.total || 0) + 1;
+
+    if (selected === correct.back){
+      state.quiz.correct = (state.quiz.correct || 0) + 1;
+      save();
+      renderQuizStats();
+
+      buttons.forEach(b => { if (b.textContent === correct.back) b.classList.add("ok"); });
+      el("quizFeedback").innerHTML = `<div class="muted">✅ Goed!</div>`;
+      setTimeout(() => showNextQuiz(true), 350);
+    } else {
+      save();
+      renderQuizStats();
+
+      quizLocked = true;
+      buttons.forEach(b => {
+        if (b.textContent === selected) b.classList.add("bad");
+        if (b.textContent === correct.back) b.classList.add("ok");
+      });
+      el("quizFeedback").innerHTML = `<div class="muted">❌ Fout. Juiste antwoord: <b>${escapeHtml(correct.back)}</b></div>`;
+      el("quizNextBtn").style.display = "inline-block";
+    }
+  }
+
+  // ===== Events =====
+  el("tabOverview").onclick = () => activateTab("overview");
+  el("tabLearn").onclick = () => activateTab("learn");
+  el("tabQuiz").onclick = () => activateTab("quiz");
+
+  el("lessonMax").addEventListener("change", (e) => {
+    const v = Math.max(1, Math.floor(Number(e.target.value) || 1));
+    state.lesson = v;
+    save();
+    renderPairs();
+    // keep learn/quiz consistent if user is on those tabs
+    if (el("learnShell").style.display !== "none") showNextLearn();
+    if (el("quizShell").style.display !== "none") showNextQuiz(true);
   });
-}
 
-function filtered(){
-  return cards.filter(c=>{
-    if(state.pos && !state.pos.includes(norm(c.pos))) return false;
-    if(state.lesson && Number(c.due)>state.lesson) return false;
-    return true;
+  el("selAllBtn").onclick = () => {
+    // empty array means "all"
+    state.pos = [];
+    save();
+    renderPosChecks();
+    renderPairs();
+  };
+
+  el("selNoneBtn").onclick = () => {
+    // explicit none
+    state.pos = ["__none__"]; // makes set not match anything
+    save();
+    renderPosChecks();
+    renderPairs();
+  };
+
+  el("sortAZBtn").onclick = () => {
+    state.sortAZ = !state.sortAZ;
+    save();
+    updateSortButtonLabel();
+    renderPairs();
+  };
+
+  el("learnRevealBtn").onclick = () => {
+    el("learnBack").style.display = "block";
+    el("learnGradeBtns").style.display = "block";
+    el("learnRevealBtn").style.display = "none";
+  };
+  el("learnNextBtn").onclick = () => showNextLearn();
+
+  el("learnGradeBtns").addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-q]");
+    if (!btn || !learnCurrent) return;
+    // grading buttons are currently UI-only (no scheduling). You can wire SRS here later if desired.
+    showNextLearn();
   });
-}
 
-function renderPairs(){
-  const box=el("pairs");
-  box.innerHTML="";
-  let arr=filtered();
-  if(state.sortAZ) arr.sort((a,b)=>a.front.localeCompare(b.front));
-  arr.slice(0,200).forEach(c=>{
-    const d=document.createElement("div");
-    d.className="item";
-    d.innerHTML=`<div class="muted">${c.pos} • les ${c.due}</div><b>${c.front}</b> ↔ ${c.back}`;
-    box.appendChild(d);
-  });
-}
+  el("quizResetBtn").onclick = () => {
+    state.quiz = { correct: 0, total: 0 };
+    save();
+    renderQuizStats();
+    quizLocked = false;
+    showNextQuiz(true);
+  };
+  el("quizNextBtn").onclick = () => { quizLocked = false; showNextQuiz(true); };
+  el("quizSkipBtn").onclick = () => showNextQuiz(true);
 
-function nextLearn(){
-  const pool=filtered();
-  if(!pool.length) return;
-  const c=pool[Math.floor(Math.random()*pool.length)];
-  learnCurrent=c;
-  el("learnFront").textContent=c.front;
-  el("learnBack").textContent=c.back;
-  el("learnBack").style.display="none";
-  el("learnCard").style.display="block";
-}
+  // ===== Load =====
+  async function loadFromSheet(){
+    setStatus("Loading…");
+    try {
+      const res = await fetch(API_URL);
+      const json = await res.json();
+      rawCards = (json.data || []).slice();
+      cards = rawCards.map(mergedCard).filter(c => c.active);
 
-function nextQuiz(){
-  const pool=filtered();
-  if(pool.length<2) return;
-  quizCurrent=pool[Math.floor(Math.random()*pool.length)];
-  el("quizQuestion").textContent=quizCurrent.front;
-}
+      // default lesson UI value
+      el("lessonMax").value = String(Math.max(1, Number(state.lesson || 1)));
 
-document.getElementById("sortAZBtn").onclick=()=>{
-  state.sortAZ=!state.sortAZ;
-  save();renderPairs();
-};
+      renderPosChecks();
+      updateSortButtonLabel();
+      renderPairs();
 
-document.getElementById("tabOverview").onclick=()=>activateTab("overview");
-document.getElementById("tabLearn").onclick=()=>activateTab("learn");
-document.getElementById("tabQuiz").onclick=()=>activateTab("quiz");
+      setStatus(`Loaded: ${cards.length} woorden`);
 
-document.getElementById("lessonMax").onchange=e=>{
-  state.lesson=Number(e.target.value);
-  save();renderPairs();
-};
+      // hide splash
+      el("splash").style.display = "none";
 
-document.getElementById("selAllBtn").onclick=()=>{state.pos=null;save();render();}
-document.getElementById("selNoneBtn").onclick=()=>{state.pos=[];save();render();}
+      // go to last tab
+      activateTab(state.activeTab || "overview");
+    } catch (e){
+      console.error(e);
+      setStatus("Load mislukt (check Apps Script deployment)");
+      // still hide splash so you can see error
+      el("splash").style.display = "none";
+    }
+  }
 
-if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("sw.js");
-}
+  // Register Service Worker (ensure sw.js exists in same folder as index.html)
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js").catch(err => {
+        console.warn("SW registration failed:", err);
+      });
+    });
+  }
 
-load();
+  renderQuizStats();
+  loadFromSheet();
 </script>
 </body>
 </html>
+
 
 
 
