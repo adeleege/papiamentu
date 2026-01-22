@@ -20,14 +20,12 @@
       --border:#e5e7eb;
       --accent:#2563eb;
       --accent-soft:#eff6ff;
-      --ok:#16a34a;
-      --bad:#dc2626;
       --radius:14px;
       --shadow:0 1px 2px rgba(0,0,0,.05);
     }
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
-    .wrap{max-width:820px;margin:0 auto;padding:16px}
+    .wrap{max-width:860px;margin:0 auto;padding:16px}
     .tabs{display:flex;gap:8px;margin:10px 0 14px;flex-wrap:wrap}
     .tab{padding:10px 14px;border:1px solid var(--border);border-radius:999px;background:#fff;cursor:pointer;font-weight:600;box-shadow:var(--shadow);user-select:none}
     .tab.active{background:var(--accent-soft);border-color:rgba(37,99,235,.4)}
@@ -42,11 +40,12 @@
     .item{padding:10px}
     .item + .item{border-top:1px solid #f3f4f6}
     .pill{padding:4px 10px;border:1px solid var(--border);border-radius:999px;font-size:12px;background:#fff}
-    .chip{display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);border-radius:999px;cursor:pointer;user-select:none}
+    .chip{display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);border-radius:999px;cursor:pointer;user-select:none;background:#fff}
     .chip input{margin:0}
     .opt{width:100%;text-align:left}
     .ok{border-color:rgba(22,163,74,.5);background:rgba(22,163,74,.08)}
     .bad{border-color:rgba(220,38,38,.5);background:rgba(220,38,38,.08)}
+    .section-title{margin-top:10px}
     #splash{position:fixed;inset:0;background:#f9fafb;display:flex;align-items:center;justify-content:center;z-index:9999}
     .splash-card{text-align:center}
     .splash-title{font-size:28px;font-weight:700}
@@ -81,14 +80,21 @@
           <strong>Filters</strong>
           <button id="selAllBtn">Alles</button>
           <button id="selNoneBtn">Niets</button>
+          <button id="resetFiltersBtn">Reset</button>
         </div>
 
-        <div id="posChecks" class="row" style="margin-top:10px"></div>
+        <div class="section-title"><strong>Woordsoort</strong></div>
+        <div id="posChecks" class="row" style="margin-top:8px"></div>
+
+        <div class="section-title"><strong>Tags</strong> <span class="muted">(leeg = geen tag)</span></div>
+        <div id="tagChecks" class="row" style="margin-top:8px"></div>
 
         <div class="row" style="margin-top:12px">
           <strong>Les</strong>
-          <input id="lessonMax" type="number" min="1" style="width:90px" />
-          <span class="muted">t/m</span>
+          <span class="muted">van</span>
+          <input id="lessonFrom" type="number" min="1" step="1" style="width:90px" />
+          <span class="muted">tot</span>
+          <input id="lessonTo" type="number" min="1" step="1" style="width:90px" />
           <button id="sortAZBtn">Sorteren A–Z</button>
         </div>
 
@@ -116,13 +122,6 @@
         <div style="margin-top:12px">
           <button id="learnRevealBtn" class="primary">Toon antwoord</button>
           <button id="learnNextBtn">Volgende</button>
-        </div>
-
-        <div id="learnGradeBtns" style="display:none;margin-top:10px">
-          <button data-q="0">Again</button>
-          <button data-q="3">Hard</button>
-          <button data-q="4">Good</button>
-          <button data-q="5">Easy</button>
         </div>
       </div>
 
@@ -169,7 +168,7 @@
 
 <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbxlXU7l80EPIpJJwRam1s9CdbH8PQ_PvQyftwTq55Qk51qkorrnBjwKXu2dxAp-Np_4/exec";
-  const LS_KEY = "papiamentu_app_v2";
+  const LS_KEY = "papiamentu_app_v3";
 
   let rawCards = [];
   let cards = [];
@@ -177,13 +176,16 @@
   let quizCurrent = null;
   let quizLocked = false;
 
-  // Local state + defaults (important!)
+  // Local state + defaults
   let state = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
-  if (state.lesson === undefined || state.lesson === null || state.lesson === "" || Number.isNaN(Number(state.lesson))) state.lesson = 1;
-  if (!Array.isArray(state.pos)) state.pos = []; // empty = all selected (we treat empty as all)
+  if (!Array.isArray(state.pos)) state.pos = [];          // empty => all
+  if (!Array.isArray(state.tags)) state.tags = [];        // empty => all
   if (state.sortAZ === undefined) state.sortAZ = false;
   if (!state.quiz) state.quiz = { correct: 0, total: 0 };
   if (!state.activeTab) state.activeTab = "overview";
+  // lesson range defaults (will be finalized after data load)
+  if (state.lessonFrom === undefined || state.lessonFrom === null || state.lessonFrom === "" || Number.isNaN(Number(state.lessonFrom))) state.lessonFrom = 1;
+  if (state.lessonTo === undefined || state.lessonTo === null || state.lessonTo === "" || Number.isNaN(Number(state.lessonTo))) state.lessonTo = 1;
   save();
 
   const POS_LABELS = {
@@ -192,33 +194,30 @@
     conj:"Voegwoord", phrase:"Uitdrukking", other:"Overig"
   };
   const POS_ORDER = ["noun","verb","adj","adv","prep","pron","conj","phrase","other"];
+  const UNTAGGED = "__UNTAGGED__";
 
   const el = (id) => document.getElementById(id);
   const norm = (s) => String(s || "").trim().toLowerCase();
 
   function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
-
   function setStatus(msg){ el("status").textContent = msg || ""; }
 
-  function activateTab(name){
-    const isOverview = name === "overview";
-    const isLearn = name === "learn";
-    const isQuiz = name === "quiz";
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[c]));
+  }
 
-    el("tabOverview").classList.toggle("active", isOverview);
-    el("tabLearn").classList.toggle("active", isLearn);
-    el("tabQuiz").classList.toggle("active", isQuiz);
+  function lessonOf(card){
+    const n = Number(card.due ?? 1);
+    return Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1;
+  }
 
-    el("overviewShell").style.display = isOverview ? "block" : "none";
-    el("learnShell").style.display = isLearn ? "block" : "none";
-    el("quizShell").style.display = isQuiz ? "block" : "none";
-
-    state.activeTab = name;
-    save();
-
-    if (isOverview) renderPairs();
-    if (isLearn) showNextLearn();
-    if (isQuiz) { renderQuizStats(); showNextQuiz(true); }
+  function parseTags(raw){
+    const s = String(raw ?? "").trim();
+    if (!s) return [];
+    // split on comma or semicolon
+    return s.split(/[;,]/g).map(t => t.trim()).filter(Boolean);
   }
 
   function mergedCard(raw){
@@ -230,33 +229,63 @@
       back: String(raw.back ?? ""),
       due: raw.due, // lesson number
       active: String(raw.active ?? "TRUE").toUpperCase() !== "FALSE",
+      tagsRaw: raw.tags ?? raw.tag ?? "",
+      tags: parseTags(raw.tags ?? raw.tag ?? "")
     };
   }
 
   function allTypes(){
     const types = new Set(cards.map(c => c.pos || "other"));
-    // stable order-ish
     return Array.from(types).sort((a,b) => (POS_ORDER.indexOf(a) - POS_ORDER.indexOf(b)));
   }
 
-  function selectedTypesSet(){
-    // state.pos empty => all types selected
-    if (!state.pos || state.pos.length === 0) return new Set(allTypes());
+  function allTags(){
+    const set = new Set();
+    let hasUntagged = false;
+    cards.forEach(c => {
+      const ts = (c.tags || []);
+      if (!ts.length) hasUntagged = true;
+      ts.forEach(t => set.add(t));
+    });
+    const list = Array.from(set).sort((a,b) => a.localeCompare(b, "nl", {sensitivity:"base"}));
+    if (hasUntagged) list.unshift(UNTAGGED);
+    return list;
+  }
+
+  function selectedPosSet(){
+    if (!state.pos || state.pos.length === 0) return new Set(allTypes()); // empty => all
     return new Set(state.pos.map(norm));
   }
 
-  function filtered(){
-    const sel = selectedTypesSet();
-    const maxLesson = Math.max(1, Number(state.lesson || 1));
+  function selectedTagSet(){
+    if (!state.tags || state.tags.length === 0) return null; // null => all tags allowed
+    return new Set(state.tags);
+  }
+
+  function inLessonRange(card){
+    const l = lessonOf(card);
+    const from = Math.max(1, Math.floor(Number(state.lessonFrom || 1)));
+    const to = Math.max(from, Math.floor(Number(state.lessonTo || from)));
+    return l >= from && l <= to;
+  }
+
+  function matchesTags(card){
+    const sel = selectedTagSet();
+    if (!sel) return true; // no tag filter => all
+
+    const ts = card.tags || [];
+    if (!ts.length) return sel.has(UNTAGGED);
+    return ts.some(t => sel.has(t));
+  }
+
+  function filteredPool(){
+    const posSel = selectedPosSet();
 
     return cards.filter(c => {
       if (!c.active) return false;
-
-      const lesson = Number(c.due ?? 1);
-      if (Number.isFinite(lesson) && lesson > maxLesson) return false;
-
-      if (!sel.has(norm(c.pos))) return false;
-
+      if (!inLessonRange(c)) return false;
+      if (!posSel.has(norm(c.pos))) return false;
+      if (!matchesTags(c)) return false;
       return (c.front || "").trim() && (c.back || "").trim();
     });
   }
@@ -266,7 +295,7 @@
     cont.innerHTML = "";
 
     const types = allTypes();
-    const sel = selectedTypesSet();
+    const sel = selectedPosSet();
 
     types.forEach(p => {
       const lab = document.createElement("label");
@@ -276,7 +305,7 @@
       cb.type = "checkbox";
       cb.checked = sel.has(p);
       cb.onchange = () => {
-        // if state.pos empty (meaning "all"), expand it to all first
+        // if empty => all, expand to all first
         if (!state.pos || state.pos.length === 0) state.pos = types.slice();
 
         if (cb.checked) {
@@ -284,12 +313,58 @@
         } else {
           state.pos = state.pos.filter(x => x !== p);
         }
+        // if user ends up selecting all, collapse back to empty (meaning "all")
+        if (state.pos.length === types.length) state.pos = [];
         save();
-        renderPairs();
+        refreshAllViews();
       };
 
       const txt = document.createElement("span");
       txt.textContent = POS_LABELS[p] || p;
+
+      lab.appendChild(cb);
+      lab.appendChild(txt);
+      cont.appendChild(lab);
+    });
+  }
+
+  function renderTagChecks(){
+    const cont = el("tagChecks");
+    cont.innerHTML = "";
+
+    const tags = allTags();
+    const sel = selectedTagSet(); // null => all
+
+    if (tags.length === 0){
+      cont.innerHTML = `<div class="muted">Geen tags gevonden.</div>`;
+      return;
+    }
+
+    tags.forEach(t => {
+      const lab = document.createElement("label");
+      lab.className = "chip";
+
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = sel ? sel.has(t) : true; // no filter => all checked
+
+      cb.onchange = () => {
+        // if empty => all, expand to all first
+        if (!state.tags || state.tags.length === 0) state.tags = tags.slice();
+
+        if (cb.checked) {
+          if (!state.tags.includes(t)) state.tags.push(t);
+        } else {
+          state.tags = state.tags.filter(x => x !== t);
+        }
+        // if user ends up selecting all, collapse back to empty ("all")
+        if (state.tags.length === tags.length) state.tags = [];
+        save();
+        refreshAllViews();
+      };
+
+      const txt = document.createElement("span");
+      txt.textContent = (t === UNTAGGED) ? "Geen tag" : t;
 
       lab.appendChild(cb);
       lab.appendChild(txt);
@@ -305,17 +380,7 @@
     const box = el("pairs");
     box.innerHTML = "";
 
-    const sel = selectedTypesSet();
-    const maxLesson = Math.max(1, Number(state.lesson || 1));
-
-    let arr = cards
-      .filter(c => c.active)
-      .filter(c => sel.has(norm(c.pos)))
-      .filter(c => {
-        const lesson = Number(c.due ?? 1);
-        return (!Number.isFinite(lesson) ? true : lesson <= maxLesson);
-      })
-      .filter(c => (c.front || "").trim() && (c.back || "").trim());
+    let arr = filteredPool();
 
     if (!arr.length){
       box.innerHTML = `<div class="muted" style="padding:10px">Geen woorden binnen je filters.</div>`;
@@ -329,8 +394,8 @@
         const pa = POS_ORDER.indexOf(norm(a.pos));
         const pb = POS_ORDER.indexOf(norm(b.pos));
         if (pa !== pb) return pa - pb;
-        const la = Number(a.due ?? 1), lb = Number(b.due ?? 1);
-        if (Number.isFinite(la) && Number.isFinite(lb) && la !== lb) return la - lb;
+        const la = lessonOf(a), lb = lessonOf(b);
+        if (la !== lb) return la - lb;
         return a.front.localeCompare(b.front, "nl", {sensitivity:"base"});
       });
     }
@@ -338,18 +403,13 @@
     arr.slice(0, 200).forEach(c => {
       const div = document.createElement("div");
       div.className = "item";
+      const tagText = (c.tags && c.tags.length) ? c.tags.join(", ") : "—";
       div.innerHTML = `
-        <div class="muted">${(POS_LABELS[norm(c.pos)] || c.pos)} • les ${c.due ?? "-"}</div>
+        <div class="muted">${(POS_LABELS[norm(c.pos)] || c.pos)} • les ${lessonOf(c)} • tags: ${escapeHtml(tagText)}</div>
         <div><b>${escapeHtml(c.front)}</b> ↔ ${escapeHtml(c.back)}</div>
       `;
       box.appendChild(div);
     });
-  }
-
-  function escapeHtml(s){
-    return String(s).replace(/[&<>"']/g, c => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-    }[c]));
   }
 
   // ===== Learn =====
@@ -362,10 +422,10 @@
     el("learnBack").textContent = c.back || "";
     el("learnBack").style.display = "none";
 
-    el("learnGradeBtns").style.display = "none";
     el("learnRevealBtn").style.display = "inline-block";
 
-    el("learnMeta").textContent = `Type: ${c.pos || "-"} • les: ${c.due ?? "-"}`;
+    const tagText = (c.tags && c.tags.length) ? c.tags.join(", ") : "—";
+    el("learnMeta").textContent = `Type: ${c.pos || "-"} • les: ${lessonOf(c)} • tags: ${tagText}`;
   }
 
   function showLearnEmpty(){
@@ -375,39 +435,19 @@
   }
 
   function showNextLearn(){
-    const pool = filtered();
+    const pool = filteredPool();
     if (!pool.length) return showLearnEmpty();
     const nxt = pool[Math.floor(Math.random() * pool.length)];
     showLearnCard(nxt);
   }
 
-  // ===== Quiz stats =====
+  // ===== Quiz =====
   function renderQuizStats(){
     const s = state.quiz || { correct: 0, total: 0 };
     el("quizCorrect").textContent = String(s.correct || 0);
     el("quizTotal").textContent = String(s.total || 0);
     const pct = (s.total > 0) ? Math.round((s.correct / s.total) * 100) : 0;
     el("quizPct").textContent = `${pct}%`;
-  }
-
-  function makeQuizQuestion(){
-    const pool = filtered();
-    if (pool.length < 2) return null;
-
-    const correct = pool[Math.floor(Math.random() * pool.length)];
-    const others = pool.filter(c => c.id !== correct.id);
-
-    // decoys prefer same POS
-    const samePos = others.filter(c => norm(c.pos) === norm(correct.pos));
-    const decoyPool = (samePos.length >= 3 ? samePos : others);
-
-    const decoys = shuffle(decoyPool).map(c => c.back).filter(b => b && b !== correct.back);
-    const options = uniq([correct.back, ...decoys]).slice(0, 4);
-
-    // ensure at least 2 options
-    if (options.length < 2) return null;
-
-    return { correct, options: shuffle(options) };
   }
 
   function uniq(arr){ return Array.from(new Set(arr)); }
@@ -420,6 +460,24 @@
     return arr;
   }
 
+  function makeQuizQuestion(){
+    const pool = filteredPool();
+    if (pool.length < 2) return null;
+
+    const correct = pool[Math.floor(Math.random() * pool.length)];
+    const others = pool.filter(c => c.id !== correct.id);
+
+    // Prefer decoys with same POS, fallback to any
+    const samePos = others.filter(c => norm(c.pos) === norm(correct.pos));
+    const decoyPool = (samePos.length >= 3 ? samePos : others);
+
+    const decoys = shuffle(decoyPool).map(c => c.back).filter(b => b && b !== correct.back);
+    const options = uniq([correct.back, ...decoys]).slice(0, 4);
+
+    if (options.length < 2) return null;
+    return { correct, options: shuffle(options) };
+  }
+
   function renderQuiz(q){
     quizCurrent = q;
     quizLocked = false;
@@ -429,7 +487,8 @@
     el("quizFeedback").innerHTML = "";
     el("quizNextBtn").style.display = "none";
 
-    el("quizMeta").textContent = `Type: ${q.correct.pos || "-"} • les: ${q.correct.due ?? "-"}`;
+    const tagText = (q.correct.tags && q.correct.tags.length) ? q.correct.tags.join(", ") : "—";
+    el("quizMeta").textContent = `Type: ${q.correct.pos || "-"} • les: ${lessonOf(q.correct)} • tags: ${tagText}`;
     el("quizQuestion").textContent = q.correct.front || "";
 
     const cont = el("quizOptions");
@@ -452,7 +511,6 @@
 
   function showNextQuiz(force=false){
     if (!force && quizLocked) return;
-
     const q = makeQuizQuestion();
     if (!q) return showQuizEmpty();
     renderQuiz(q);
@@ -485,41 +543,44 @@
         if (b.textContent === selected) b.classList.add("bad");
         if (b.textContent === correct.back) b.classList.add("ok");
       });
-      el("quizFeedback").innerHTML = `<div class="muted">❌ Fout. Juiste antwoord: <b>${escapeHtml(correct.back)}</b></div>`;
+      el("quizFeedback").innerHTML =
+        `<div class="muted">❌ Fout. Juiste antwoord: <b>${escapeHtml(correct.back)}</b></div>`;
       el("quizNextBtn").style.display = "inline-block";
     }
+  }
+
+  // ===== Tabs =====
+  function activateTab(name){
+    const isOverview = name === "overview";
+    const isLearn = name === "learn";
+    const isQuiz = name === "quiz";
+
+    el("tabOverview").classList.toggle("active", isOverview);
+    el("tabLearn").classList.toggle("active", isLearn);
+    el("tabQuiz").classList.toggle("active", isQuiz);
+
+    el("overviewShell").style.display = isOverview ? "block" : "none";
+    el("learnShell").style.display = isLearn ? "block" : "none";
+    el("quizShell").style.display = isQuiz ? "block" : "none";
+
+    state.activeTab = name;
+    save();
+
+    if (isOverview) renderPairs();
+    if (isLearn) showNextLearn();
+    if (isQuiz) { renderQuizStats(); showNextQuiz(true); }
+  }
+
+  function refreshAllViews(){
+    renderPairs();
+    if (el("learnShell").style.display !== "none") showNextLearn();
+    if (el("quizShell").style.display !== "none") showNextQuiz(true);
   }
 
   // ===== Events =====
   el("tabOverview").onclick = () => activateTab("overview");
   el("tabLearn").onclick = () => activateTab("learn");
   el("tabQuiz").onclick = () => activateTab("quiz");
-
-  el("lessonMax").addEventListener("change", (e) => {
-    const v = Math.max(1, Math.floor(Number(e.target.value) || 1));
-    state.lesson = v;
-    save();
-    renderPairs();
-    // keep learn/quiz consistent if user is on those tabs
-    if (el("learnShell").style.display !== "none") showNextLearn();
-    if (el("quizShell").style.display !== "none") showNextQuiz(true);
-  });
-
-  el("selAllBtn").onclick = () => {
-    // empty array means "all"
-    state.pos = [];
-    save();
-    renderPosChecks();
-    renderPairs();
-  };
-
-  el("selNoneBtn").onclick = () => {
-    // explicit none
-    state.pos = ["__none__"]; // makes set not match anything
-    save();
-    renderPosChecks();
-    renderPairs();
-  };
 
   el("sortAZBtn").onclick = () => {
     state.sortAZ = !state.sortAZ;
@@ -530,17 +591,9 @@
 
   el("learnRevealBtn").onclick = () => {
     el("learnBack").style.display = "block";
-    el("learnGradeBtns").style.display = "block";
     el("learnRevealBtn").style.display = "none";
   };
   el("learnNextBtn").onclick = () => showNextLearn();
-
-  el("learnGradeBtns").addEventListener("click", (e) => {
-    const btn = e.target.closest("button[data-q]");
-    if (!btn || !learnCurrent) return;
-    // grading buttons are currently UI-only (no scheduling). You can wire SRS here later if desired.
-    showNextLearn();
-  });
 
   el("quizResetBtn").onclick = () => {
     state.quiz = { correct: 0, total: 0 };
@@ -552,6 +605,67 @@
   el("quizNextBtn").onclick = () => { quizLocked = false; showNextQuiz(true); };
   el("quizSkipBtn").onclick = () => showNextQuiz(true);
 
+  el("selAllBtn").onclick = () => {
+    state.pos = [];   // empty => all
+    state.tags = [];  // empty => all
+    save();
+    renderPosChecks();
+    renderTagChecks();
+    refreshAllViews();
+  };
+
+  el("selNoneBtn").onclick = () => {
+    // "Niets" means: select nothing in both (so result is empty)
+    // easiest: set impossible selections
+    state.pos = ["__NONE_POS__"];
+    state.tags = ["__NONE_TAG__"];
+    save();
+    renderPosChecks();
+    renderTagChecks();
+    refreshAllViews();
+  };
+
+  el("resetFiltersBtn").onclick = () => {
+    // Reset to: all POS, all tags, full lesson range, standard sort
+    state.pos = [];
+    state.tags = [];
+    state.sortAZ = false;
+
+    // lesson range reset will use computed min/max if available
+    state.lessonFrom = 1;
+    state.lessonTo = (window.__maxLesson || 1);
+
+    save();
+    syncLessonInputs();
+    renderPosChecks();
+    renderTagChecks();
+    updateSortButtonLabel();
+    refreshAllViews();
+  };
+
+  el("lessonFrom").addEventListener("change", () => {
+    const v = Math.max(1, Math.floor(Number(el("lessonFrom").value) || 1));
+    state.lessonFrom = v;
+    if (Number(state.lessonTo) < v) state.lessonTo = v;
+    save();
+    syncLessonInputs();
+    refreshAllViews();
+  });
+
+  el("lessonTo").addEventListener("change", () => {
+    const v = Math.max(1, Math.floor(Number(el("lessonTo").value) || 1));
+    const from = Math.max(1, Math.floor(Number(state.lessonFrom || 1)));
+    state.lessonTo = Math.max(from, v);
+    save();
+    syncLessonInputs();
+    refreshAllViews();
+  });
+
+  function syncLessonInputs(){
+    el("lessonFrom").value = String(Math.max(1, Number(state.lessonFrom || 1)));
+    el("lessonTo").value = String(Math.max(1, Number(state.lessonTo || state.lessonFrom || 1)));
+  }
+
   // ===== Load =====
   async function loadFromSheet(){
     setStatus("Loading…");
@@ -561,27 +675,40 @@
       rawCards = (json.data || []).slice();
       cards = rawCards.map(mergedCard).filter(c => c.active);
 
-      // default lesson UI value
-      el("lessonMax").value = String(Math.max(1, Number(state.lesson || 1)));
+      // Compute min/max lesson from data
+      const lessons = cards.map(lessonOf);
+      const minLesson = lessons.length ? Math.min(...lessons) : 1;
+      const maxLesson = lessons.length ? Math.max(...lessons) : 1;
+      window.__maxLesson = maxLesson;
+
+      // If user has never set lessonTo, or it's out of range, clamp it
+      if (!Number.isFinite(Number(state.lessonFrom)) || Number(state.lessonFrom) < minLesson) state.lessonFrom = minLesson;
+      if (!Number.isFinite(Number(state.lessonTo)) || Number(state.lessonTo) < state.lessonFrom) state.lessonTo = maxLesson;
+      if (Number(state.lessonTo) > maxLesson) state.lessonTo = maxLesson;
+
+      save();
+      syncLessonInputs();
 
       renderPosChecks();
+      renderTagChecks();
       updateSortButtonLabel();
       renderPairs();
+      renderQuizStats();
 
       setStatus(`Loaded: ${cards.length} woorden`);
-
-      // hide splash
       el("splash").style.display = "none";
-
-      // go to last tab
       activateTab(state.activeTab || "overview");
     } catch (e){
       console.error(e);
       setStatus("Load mislukt (check Apps Script deployment)");
-      // still hide splash so you can see error
       el("splash").style.display = "none";
     }
   }
+
+  // Set inputs immediately (even before data arrives)
+  syncLessonInputs();
+  updateSortButtonLabel();
+  renderQuizStats();
 
   // Register Service Worker (ensure sw.js exists in same folder as index.html)
   if ("serviceWorker" in navigator) {
@@ -592,7 +719,6 @@
     });
   }
 
-  renderQuizStats();
   loadFromSheet();
 </script>
 </body>
