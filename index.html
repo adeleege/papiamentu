@@ -4,6 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Woorden oefenen</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
   <style>
     :root{
       --bg:#fafafa;
@@ -11,49 +18,51 @@
       --text:#111827;
       --muted:#6b7280;
       --border:#e5e7eb;
-      --border2:#d1d5db;
-      --accent:#2563eb;       /* subtle blue */
-      --accent-soft:#eff6ff;  /* very light blue */
+      --accent:#2563eb;
+      --accent-soft:#eff6ff;
       --ok:#16a34a;
       --bad:#dc2626;
-      --shadow: 0 1px 2px rgba(0,0,0,.05);
-      --radius: 14px;
+      --radius:14px;
+      --shadow:0 1px 2px rgba(0,0,0,.05);
     }
 
     *{box-sizing:border-box}
     body{
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
       margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
       background:var(--bg);
       color:var(--text);
     }
+
     .wrap{max-width:820px;margin:0 auto;padding:16px}
-    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
-    .status{color:var(--muted);font-size:12px}
-    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+
+    .tabs{
+      display:flex;
+      gap:8px;
+      margin:10px 0 14px;
+      flex-wrap:wrap;
+    }
+
     .tab{
-      padding:10px 12px;
+      padding:10px 14px;
       border:1px solid var(--border);
       border-radius:999px;
-      background:var(--card);
+      background:#fff;
       cursor:pointer;
-      box-shadow:var(--shadow);
-      user-select:none;
       font-weight:600;
-      color:#111827;
     }
+
     .tab.active{
-      border-color:rgba(37,99,235,.35);
       background:var(--accent-soft);
-      color:#0f172a;
+      border-color:rgba(37,99,235,.4);
     }
 
     .card{
+      background:#fff;
       border:1px solid var(--border);
       border-radius:var(--radius);
       padding:14px;
       margin:12px 0;
-      background:var(--card);
       box-shadow:var(--shadow);
     }
 
@@ -64,688 +73,301 @@
     button{
       padding:10px 12px;
       border-radius:12px;
-      border:1px solid var(--border2);
-      background:var(--card);
-      cursor:pointer;
+      border:1px solid var(--border);
+      background:#fff;
       font-weight:600;
-      color:#111827;
-      transition:transform .02s ease, border-color .15s ease, background .15s ease;
+      cursor:pointer;
     }
-    button:hover{border-color:#bfc7d1}
-    button:active{transform:scale(0.99)}
+
     button.primary{
-      border-color:rgba(37,99,235,.35);
       background:var(--accent-soft);
-      color:#0f172a;
+      border-color:rgba(37,99,235,.4);
     }
-    button:disabled{opacity:.55;cursor:not-allowed}
+
+    button:disabled{opacity:.5}
 
     input{
       padding:10px 12px;
       border-radius:12px;
-      border:1px solid var(--border2);
-      background:var(--card);
-      color:var(--text);
-      outline:none;
-    }
-    input:focus{border-color:rgba(37,99,235,.45); box-shadow:0 0 0 3px rgba(37,99,235,.08)}
-
-    .pill{
-      display:inline-block;
-      padding:3px 10px;
       border:1px solid var(--border);
-      border-radius:999px;
-      font-size:12px;
-      color:var(--muted);
-      background:#fff;
     }
 
-    .opt{width:100%;text-align:left}
-    .ok{border-color:rgba(22,163,74,.45); background:rgba(22,163,74,.06)}
-    .bad{border-color:rgba(220,38,38,.45); background:rgba(220,38,38,.06)}
-
-    /* scrolling list: reliable on mobile */
     .list{
       max-height:62vh;
       overflow:auto;
       -webkit-overflow-scrolling:touch;
-      overscroll-behavior:contain;
       border:1px solid var(--border);
       border-radius:var(--radius);
       padding:8px;
       background:#fff;
     }
-    .item{padding:10px 10px}
+
+    .item{padding:10px}
     .item + .item{border-top:1px solid #f3f4f6}
-    .kv{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between}
-    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
-    .chip{
-      display:flex;align-items:center;gap:8px;
-      padding:7px 10px;
+
+    .ok{border-color:rgba(22,163,74,.5);background:rgba(22,163,74,.08)}
+    .bad{border-color:rgba(220,38,38,.5);background:rgba(220,38,38,.08)}
+
+    .pill{
+      padding:4px 10px;
       border:1px solid var(--border);
       border-radius:999px;
+      font-size:12px;
       background:#fff;
-      cursor:pointer;
-      user-select:none;
     }
-    .chip input{margin:0}
+
+    .chip{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      cursor:pointer;
+    }
+
+    #splash{
+      position:fixed;
+      inset:0;
+      background:#f9fafb;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:9999;
+    }
+    .splash-card{text-align:center}
+    .splash-title{font-size:28px;font-weight:700}
+    .splash-sub{color:#6b7280;margin-top:4px}
+    .loader{
+      width:36px;height:36px;
+      border:3px solid #e5e7eb;
+      border-top-color:#2563eb;
+      border-radius:50%;
+      animation:spin 1s linear infinite;
+      margin:16px auto 0;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
+
 <body>
-  <div class="wrap">
-    <div class="topbar">
-      <div class="status" id="status"></div>
-    </div>
 
-    <div class="tabs">
-      <div id="tabOverview" class="tab active">Overzicht</div>
-      <div id="tabLearn" class="tab">Woorden leren</div>
-      <div id="tabQuiz" class="tab">Quiz</div>
-    </div>
+<div id="splash">
+  <div class="splash-card">
+    <div class="splash-title">Papiamentu</div>
+    <div class="splash-sub">Woorden oefenen</div>
+    <div class="loader"></div>
+  </div>
+</div>
 
-    <!-- OVERVIEW TAB -->
-    <div id="overviewShell">
-      <div class="card">
-        <div class="row">
-          <strong>Filters</strong>
-          <button id="selAllBtn" class="small">Alles</button>
-          <button id="selNoneBtn" class="small">Niets</button>
-        </div>
+<div class="wrap">
 
-        <div id="posChecks" class="row" style="margin-top:10px"></div>
-
-        <div class="row" style="margin-top:12px">
-          <strong>Les filter</strong>
-          <label class="muted">t/m les</label>
-          <input id="lessonMax" type="number" min="1" step="1" style="width:90px" />
-          <span class="muted">1 = les 1 • 2 = les 1+2 • etc.</span>
-        </div>
-
-        <div class="muted" style="margin-top:8px">
-          Deze filters gelden voor Overzicht, Woorden leren en Quiz.
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="row" style="justify-content:space-between">
-          <strong>Woorden (front ↔ back)</strong>
-          <div class="row">
-            <button id="sortAZBtn" class="small">Sorteren A–Z</button>
-            <span class="muted">max 200 zichtbaar</span>
-          </div>
-        </div>
-        <div id="pairs" class="list" style="margin-top:8px"></div>
-      </div>
-    </div>
-
-    <!-- LEARN TAB -->
-    <div id="learnShell" style="display:none">
-      <div id="learnView">
-        <div class="card" id="learnCard" style="display:none">
-          <div class="muted" id="learnMeta"></div>
-          <h3 id="learnFront" style="margin:10px 0 0"></h3>
-          <div id="learnBack" style="display:none;margin-top:10px"></div>
-          <div class="muted" id="learnExample" style="margin-top:10px"></div>
-
-          <div style="margin-top:12px">
-            <button id="learnRevealBtn" class="primary">Toon antwoord</button>
-            <button id="learnNextBtn">Volgende</button>
-          </div>
-
-          <div id="learnGradeBtns" style="display:none;margin-top:10px">
-            <button data-q="0">Again</button>
-            <button data-q="3">Hard</button>
-            <button data-q="4">Good</button>
-            <button data-q="5">Easy</button>
-          </div>
-        </div>
-
-        <div class="card" id="learnEmpty" style="display:none">
-          <strong>Geen kaarten binnen deze les/filter</strong>
-          <div class="muted" style="margin-top:6px">
-            Verhoog je les-filter of vink andere types aan (in Overzicht).
-          </div>
-          <button id="learnTryAgainBtn" style="margin-top:10px">Opnieuw</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- QUIZ TAB -->
-    <div id="quizShell" style="display:none">
-      <div class="card">
-        <div class="kv">
-          <div>
-            <strong>Quiz</strong>
-            <div class="muted">Klik het juiste Papiamentu antwoord.</div>
-          </div>
-          <div style="text-align:right">
-            <div class="pill">Correct: <span id="quizPct" class="mono">0%</span></div>
-            <div class="muted"><span id="quizCorrect">0</span>/<span id="quizTotal">0</span></div>
-          </div>
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <button id="quizResetBtn">Reset score</button>
-        </div>
-
-        <div class="muted" style="margin-top:8px">
-          (Score is lokaal op dit apparaat.)
-        </div>
-      </div>
-
-      <div class="card" id="quizCard" style="display:none">
-        <div class="muted" id="quizMeta"></div>
-        <h3 id="quizQuestion" style="margin:10px 0 0"></h3>
-        <div id="quizOptions" style="margin-top:10px"></div>
-
-        <div id="quizFeedback" style="margin-top:10px"></div>
-
-        <div style="margin-top:12px">
-          <button id="quizNextBtn" class="primary" style="display:none">Volgende</button>
-          <button id="quizSkipBtn">Sla over</button>
-        </div>
-      </div>
-
-      <div class="card" id="quizEmpty" style="display:none">
-        <strong>Geen quizvragen beschikbaar</strong>
-        <div class="muted" style="margin-top:6px">
-          Check of er genoeg woorden geladen zijn (minstens 2) binnen je filters.
-        </div>
-        <button id="quizTryAgainBtn" style="margin-top:10px">Opnieuw</button>
-      </div>
-    </div>
-
+  <div class="tabs">
+    <div id="tabOverview" class="tab active">Woordenlijst</div>
+    <div id="tabLearn" class="tab">Oefenen</div>
+    <div id="tabQuiz" class="tab">Test jezelf</div>
   </div>
 
+  <!-- OVERVIEW -->
+  <div id="overviewShell">
+    <div class="card">
+      <div class="row">
+        <strong>Filters</strong>
+        <button id="selAllBtn">Alles</button>
+        <button id="selNoneBtn">Niets</button>
+      </div>
+
+      <div id="posChecks" class="row" style="margin-top:10px"></div>
+
+      <div class="row" style="margin-top:12px">
+        <strong>Les</strong>
+        <input id="lessonMax" type="number" min="1" style="width:80px">
+        <span class="muted">t/m</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <strong>Woorden</strong>
+        <button id="sortAZBtn">Sorteren A–Z</button>
+      </div>
+      <div id="pairs" class="list" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <!-- LEARN -->
+  <div id="learnShell" style="display:none">
+    <div class="card" id="learnCard" style="display:none">
+      <div class="muted" id="learnMeta"></div>
+      <h3 id="learnFront"></h3>
+      <div id="learnBack" style="display:none;margin-top:10px"></div>
+
+      <div style="margin-top:12px">
+        <button id="learnRevealBtn" class="primary">Toon antwoord</button>
+        <button id="learnNextBtn">Volgende</button>
+      </div>
+
+      <div id="learnGradeBtns" style="display:none;margin-top:10px">
+        <button data-q="0">Again</button>
+        <button data-q="3">Hard</button>
+        <button data-q="4">Good</button>
+        <button data-q="5">Easy</button>
+      </div>
+    </div>
+
+    <div class="card" id="learnEmpty" style="display:none">
+      Geen woorden in deze selectie.
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quizShell" style="display:none">
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <strong>Quiz</strong>
+        <div>
+          <span class="pill"><span id="quizCorrect">0</span>/<span id="quizTotal">0</span></span>
+          <span class="pill"><span id="quizPct">0%</span></span>
+        </div>
+      </div>
+
+      <button id="quizResetBtn" style="margin-top:10px">Reset score</button>
+    </div>
+
+    <div class="card" id="quizCard" style="display:none">
+      <div class="muted" id="quizMeta"></div>
+      <h3 id="quizQuestion"></h3>
+      <div id="quizOptions" style="margin-top:10px"></div>
+
+      <div id="quizFeedback" style="margin-top:10px"></div>
+
+      <button id="quizNextBtn" style="display:none;margin-top:10px">Volgende</button>
+    </div>
+  </div>
+</div>
+
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbxlXU7l80EPIpJJwRam1s9CdbH8PQ_PvQyftwTq55Qk51qkorrnBjwKXu2dxAp-Np_4/exec";
-
-  const LS_KEY = "pap_srs_quiz_v7";
-  const appState = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
-
-  let rawCards = [];
-  let cards = [];
-
-  let learnCurrent = null;
-  let quizCurrent = null;
-  let quizLocked = false;
-
-  // Sorting for overview list
-  // false: sort by (pos, lesson, front); true: A-Z by front
-  if (appState.sortAZ === undefined) appState.sortAZ = false;
-
-  const POS_LABELS = {
-    noun: "Zelfst. naamwoord",
-    verb: "Werkwoord",
-    prep: "Voorzetsel",
-    adj: "Bijv. naamwoord",
-    adv: "Bijwoord",
-    pron: "Voornaamwoord",
-    conj: "Voegwoord",
-    phrase: "Uitdrukking",
-    other: "Overig",
-  };
-  const POS_ORDER = ["noun","verb","adj","adv","prep","pron","conj","phrase","other"];
-
-  const el = (id) => document.getElementById(id);
-  function setStatus(msg){ el("status").textContent = msg || ""; }
-
-  function normPos(p){
-    const s = String(p || "").trim().toLowerCase();
-    if (!s) return "other";
-    if (POS_LABELS[s]) return s;
-    return "other";
-  }
-  function uniq(arr){ return Array.from(new Set(arr)); }
-  function shuffle(a){
-    const arr = a.slice();
-    for (let i = arr.length - 1; i > 0; i--){
-      const j = Math.floor(Math.random()*(i+1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  }
-  function pickRandom(pool){
-    if (!pool.length) return null;
-    return pool[Math.floor(Math.random()*pool.length)];
-  }
-  function escapeHtml(s){
-    return String(s).replace(/[&<>"']/g, c => ({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-    }[c]));
-  }
-
-  function getLessonMax(){
-    const n = Number(appState.lessonMax ?? 1);
-    return Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1;
-  }
-  function setLessonMax(n){
-    appState.lessonMax = Math.max(1, Math.floor(Number(n) || 1));
-    localStorage.setItem(LS_KEY, JSON.stringify(appState));
-    el("lessonMax").value = String(appState.lessonMax);
-    refreshAllViews();
-  }
-  function inLessonRange(card){
-    const lesson = Number(card.due ?? card.lesson ?? card.les ?? 1);
-    if (!Number.isFinite(lesson)) return false;
-    return lesson <= getLessonMax();
-  }
-
-  function updateSRS(s, q){
-    let ease = Number(s.ease ?? 2.5);
-    let interval = Number(s.interval_days ?? 0);
-    let reps = Number(s.reps ?? 0);
-    let lapses = Number(s.lapses ?? 0);
-
-    ease = Math.max(1.3, ease + (0.1 - (5-q)*(0.08 + (5-q)*0.02)));
-
-    if (q < 3){
-      reps = 0;
-      interval = 1;
-      lapses += 1;
-    } else {
-      if (reps === 0) interval = 1;
-      else if (reps === 1) interval = 6;
-      else interval = Math.round(interval * ease);
-      reps += 1;
-    }
-
-    const next_due = new Date(Date.now() + interval * 24*60*60*1000).toISOString();
-    return { ease, interval_days: interval, reps, lapses, next_due };
-  }
-
-  function mergedCard(raw){
-    const id = String(raw.id ?? raw.ID ?? raw.Id ?? "").trim() || String((raw.front||"") + "||" + (raw.back||""));
-    const local = (appState.progress && appState.progress[id]) || {};
-    const pos = normPos(raw.pos);
-
-    return {
-      ...raw,
-      id,
-      pos,
-      front: (raw.front ?? "").toString(),
-      back: (raw.back ?? "").toString(),
-      example: (raw.example ?? "").toString(),
-      tags: (raw.tags ?? "").toString(),
-      active: String(raw.active ?? "TRUE").toUpperCase() !== "FALSE",
-      due: raw.due, // lesson number
-      next_due: local.next_due || raw.next_due || null,
-      ease: local.ease ?? raw.ease ?? 2.5,
-      interval_days: local.interval_days ?? raw.interval_days ?? 0,
-      reps: local.reps ?? raw.reps ?? 0,
-      lapses: local.lapses ?? raw.lapses ?? 0,
-    };
-  }
-
-  function saveLocalProgress(card){
-    appState.progress = appState.progress || {};
-    appState.progress[card.id] = {
-      next_due: card.next_due,
-      ease: card.ease,
-      interval_days: card.interval_days,
-      reps: card.reps,
-      lapses: card.lapses,
-    };
-    localStorage.setItem(LS_KEY, JSON.stringify(appState));
-  }
-
-  function getSelectedPosSet(){
-    const sel = appState.selectedPos || Object.keys(POS_LABELS);
-    return new Set(sel.map(normPos));
-  }
-  function setSelectedPos(list){
-    appState.selectedPos = uniq(list.map(normPos));
-    localStorage.setItem(LS_KEY, JSON.stringify(appState));
-    renderPosChecks();
-    refreshAllViews();
-  }
-  function isAllowedByPos(card){
-    return getSelectedPosSet().has(normPos(card.pos));
-  }
-
-  function filteredCards(){
-    return cards.filter(c => c.active && isAllowedByPos(c) && inLessonRange(c));
-  }
-  function learnPool(){
-    return filteredCards();
-  }
-  function quizPool(){
-    return filteredCards().filter(c => (c.front||"").trim() && (c.back||"").trim());
-  }
-
-  function renderPosChecks(){
-    const cont = el("posChecks");
-    cont.innerHTML = "";
-
-    const sel = getSelectedPosSet();
-    const existing = rawCards.length
-      ? uniq(rawCards.map(r => normPos(r.pos))).sort((a,b)=>POS_ORDER.indexOf(a)-POS_ORDER.indexOf(b))
-      : POS_ORDER;
-
-    existing.forEach(p => {
-      const wrap = document.createElement("label");
-      wrap.className = "chip";
-
-      const cb = document.createElement("input");
-      cb.type = "checkbox";
-      cb.checked = sel.has(p);
-      cb.onchange = () => {
-        const next = new Set(getSelectedPosSet());
-        if (cb.checked) next.add(p); else next.delete(p);
-        setSelectedPos(Array.from(next));
-      };
-
-      const txt = document.createElement("span");
-      txt.textContent = POS_LABELS[p] || p;
-
-      wrap.appendChild(cb);
-      wrap.appendChild(txt);
-      cont.appendChild(wrap);
-    });
-  }
-
-  function updateSortButtonLabel(){
-    el("sortAZBtn").textContent = appState.sortAZ ? "Sorteren: standaard" : "Sorteren A–Z";
-  }
-
-  function renderPairs(){
-    const cont = el("pairs");
-    cont.innerHTML = "";
-    if (!cards.length){
-      cont.innerHTML = `<div class="muted">Laden…</div>`;
-      return;
-    }
-
-    let pool = filteredCards()
-      .filter(c => (c.front||"").trim() && (c.back||"").trim());
-
-    if (!pool.length){
-      cont.innerHTML = `<div class="muted">Geen woorden binnen je filters.</div>`;
-      return;
-    }
-
-    if (appState.sortAZ){
-      pool = pool.sort((a,b) => String(a.front).localeCompare(String(b.front), "nl", {sensitivity:"base"}));
-    } else {
-      pool = pool.sort((a,b) => {
-        const pa = POS_ORDER.indexOf(normPos(a.pos));
-        const pb = POS_ORDER.indexOf(normPos(b.pos));
-        if (pa !== pb) return pa - pb;
-        const la = Number(a.due ?? 1), lb = Number(b.due ?? 1);
-        if (la !== lb && Number.isFinite(la) && Number.isFinite(lb)) return la - lb;
-        return String(a.front).localeCompare(String(b.front), "nl", {sensitivity:"base"});
-      });
-    }
-
-    pool.slice(0, 200).forEach(c => {
-      const div = document.createElement("div");
-      div.className = "item";
-      div.innerHTML = `
-        <div class="muted">${POS_LABELS[normPos(c.pos)] || c.pos} • les ${escapeHtml(c.due ?? "-")}</div>
-        <div><b>${escapeHtml(c.front)}</b> ↔ ${escapeHtml(c.back)}</div>
-      `;
-      cont.appendChild(div);
-    });
-
-    if (pool.length > 200){
-      const more = document.createElement("div");
-      more.className = "muted";
-      more.style.padding = "10px 10px";
-      more.textContent = `… en nog ${pool.length - 200} meer`;
-      cont.appendChild(more);
-    }
-  }
-
-  function showLearnCard(c){
-    learnCurrent = c;
-    el("learnEmpty").style.display = "none";
-    el("learnCard").style.display = "block";
-
-    el("learnFront").textContent = c.front || "";
-    el("learnBack").style.display = "none";
-    el("learnBack").textContent = c.back || "";
-    el("learnExample").textContent = c.example ? `Voorbeeld: ${c.example}` : "";
-
-    el("learnGradeBtns").style.display = "none";
-    el("learnRevealBtn").style.display = "inline-block";
-
-    el("learnMeta").textContent =
-      `Type: ${c.pos || "-"} • les: ${c.due ?? "-"} • next_due: ${c.next_due || "-"} • interval: ${c.interval_days}d • ease: ${Number(c.ease).toFixed(2)} • reps: ${c.reps}`;
-  }
-  function showLearnEmpty(){
-    learnCurrent = null;
-    el("learnCard").style.display = "none";
-    el("learnEmpty").style.display = "block";
-  }
-  function showNextLearn(){
-    const pool = learnPool();
-    const nxt = pickRandom(pool);
-    if (!nxt) return showLearnEmpty();
-    showLearnCard(nxt);
-  }
-
-  function getQuizStats(){
-    appState.quiz = appState.quiz || { correct: 0, total: 0 };
-    return appState.quiz;
-  }
-  function setQuizStats(correct, total){
-    appState.quiz = { correct, total };
-    localStorage.setItem(LS_KEY, JSON.stringify(appState));
-    renderQuizStats();
-  }
-  function renderQuizStats(){
-    const s = getQuizStats();
-    el("quizCorrect").textContent = String(s.correct || 0);
-    el("quizTotal").textContent = String(s.total || 0);
-    const pct = (s.total > 0) ? Math.round((s.correct / s.total) * 100) : 0;
-    el("quizPct").textContent = `${pct}%`;
-  }
-
-  function makeQuizQuestion(){
-    const pool = quizPool();
-    if (pool.length < 2) return null;
-
-    const correct = pickRandom(pool);
-    if (!correct) return null;
-
-    const samePosPool = pool.filter(c => normPos(c.pos) === normPos(correct.pos) && c.id !== correct.id);
-    const decoyPool = (samePosPool.length >= 3 ? samePosPool : pool.filter(c => c.id !== correct.id));
-
-    const decoys = shuffle(decoyPool)
-      .map(c => c.back)
-      .filter(b => b && b !== correct.back);
-
-    const options = uniq([correct.back, ...decoys]).slice(0, 4);
-    return { correct, options: shuffle(options) };
-  }
-
-  function renderQuiz(q){
-    quizCurrent = q;
-    quizLocked = false;
-
-    el("quizEmpty").style.display = "none";
-    el("quizCard").style.display = "block";
-    el("quizFeedback").innerHTML = "";
-    el("quizNextBtn").style.display = "none";
-
-    el("quizMeta").textContent = `Type: ${q.correct.pos || "-"} • les: ${q.correct.due ?? "-"} • opties: ${Math.min(4, q.options.length)}`;
-    el("quizQuestion").textContent = q.correct.front || "";
-
-    const cont = el("quizOptions");
-    cont.innerHTML = "";
-    q.options.forEach(opt => {
-      const b = document.createElement("button");
-      b.className = "opt";
-      b.textContent = opt;
-      b.onclick = () => onQuizAnswer(opt);
-      cont.appendChild(b);
-    });
-  }
-
-  function showQuizEmpty(){
-    quizCurrent = null;
-    el("quizCard").style.display = "none";
-    el("quizEmpty").style.display = "block";
-  }
-
-  function showNextQuiz(force=false){
-    if (!force && quizLocked) return;
-    const q = makeQuizQuestion();
-    if (!q) return showQuizEmpty();
-    renderQuiz(q);
-  }
-
-  function onQuizAnswer(selected){
-    if (!quizCurrent || quizLocked) return;
-
-    const { correct } = quizCurrent;
-    const buttons = Array.from(el("quizOptions").querySelectorAll("button"));
-    buttons.forEach(b => b.disabled = true);
-
-    const stats = getQuizStats();
-    stats.total = (stats.total || 0) + 1;
-
-    if (selected === correct.back){
-      stats.correct = (stats.correct || 0) + 1;
-      localStorage.setItem(LS_KEY, JSON.stringify(appState));
-      renderQuizStats();
-
-      buttons.forEach(b => {
-        if (b.textContent === correct.back) b.classList.add("ok");
-      });
-      el("quizFeedback").innerHTML = `<div class="muted">✅ Goed!</div>`;
-      setTimeout(() => showNextQuiz(true), 350);
-    } else {
-      localStorage.setItem(LS_KEY, JSON.stringify(appState));
-      renderQuizStats();
-
-      quizLocked = true;
-      buttons.forEach(b => {
-        if (b.textContent === selected) b.classList.add("bad");
-        if (b.textContent === correct.back) b.classList.add("ok");
-      });
-
-      el("quizFeedback").innerHTML =
-        `<div class="muted">❌ Fout. Juiste antwoord: <b>${escapeHtml(correct.back)}</b></div>`;
-      el("quizNextBtn").style.display = "inline-block";
-    }
-  }
-
-  function activateTab(name){
-    const isOverview = name === "overview";
-    const isLearn = name === "learn";
-    const isQuiz = name === "quiz";
-
-    el("tabOverview").classList.toggle("active", isOverview);
-    el("tabLearn").classList.toggle("active", isLearn);
-    el("tabQuiz").classList.toggle("active", isQuiz);
-
-    el("overviewShell").style.display = isOverview ? "block" : "none";
-    el("learnShell").style.display = isLearn ? "block" : "none";
-    el("quizShell").style.display = isQuiz ? "block" : "none";
-
-    if (isOverview) renderPairs();
-    if (isLearn) showNextLearn();
-    if (isQuiz) { renderQuizStats(); showNextQuiz(true); }
-  }
-
-  el("tabOverview").onclick = () => activateTab("overview");
-  el("tabLearn").onclick = () => activateTab("learn");
-  el("tabQuiz").onclick = () => activateTab("quiz");
-
-  el("selAllBtn").onclick = () => setSelectedPos(Object.keys(POS_LABELS));
-  el("selNoneBtn").onclick = () => setSelectedPos([]);
-
-  el("lessonMax").addEventListener("change", () => setLessonMax(el("lessonMax").value));
-
-  el("learnRevealBtn").onclick = () => {
-    el("learnBack").style.display = "block";
-    el("learnGradeBtns").style.display = "block";
-    el("learnRevealBtn").style.display = "none";
-  };
-  el("learnNextBtn").onclick = () => showNextLearn();
-  el("learnTryAgainBtn").onclick = () => showNextLearn();
-
-  el("learnGradeBtns").addEventListener("click", (e) => {
-    const btn = e.target.closest("button[data-q]");
-    if (!btn || !learnCurrent) return;
-    const q = Number(btn.dataset.q);
-
-    const upd = updateSRS(learnCurrent, q);
-    Object.assign(learnCurrent, upd);
-    saveLocalProgress(learnCurrent);
-
-    showNextLearn();
+const API_URL = "https://script.google.com/macros/s/AKfycbxlXU7l80EPIpJJwRam1s9CdbH8PQ_PvQyftwTq55Qk51qkorrnBjwKXu2dxAp-Np_4/exec";
+const LS_KEY = "papiamentu_app_v1";
+
+let rawCards=[], cards=[], learnCurrent=null, quizCurrent=null, quizLocked=false;
+let state = JSON.parse(localStorage.getItem(LS_KEY) || "{}");
+
+const POS_LABELS = {
+  noun:"Zelfst. nw", verb:"Werkwoord", adj:"Bijv. nw",
+  adv:"Bijwoord", prep:"Voorzetsel", pron:"Voornaamw.",
+  conj:"Voegwoord", phrase:"Uitdrukking", other:"Overig"
+};
+
+const el = id => document.getElementById(id);
+const norm = s => String(s||"").toLowerCase();
+
+function save(){localStorage.setItem(LS_KEY,JSON.stringify(state))}
+
+function activateTab(name){
+  ["overview","learn","quiz"].forEach(t=>{
+    el("tab"+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle("active",t===name);
+    el(t+"Shell").style.display = t===name?"block":"none";
   });
+  if(name==="learn") nextLearn();
+  if(name==="quiz") nextQuiz();
+}
 
-  el("quizNextBtn").onclick = () => {
-    quizLocked = false;
-    showNextQuiz(true);
-  };
-  el("quizSkipBtn").onclick = () => showNextQuiz(true);
-  el("quizTryAgainBtn").onclick = () => showNextQuiz(true);
+function load(){
+  fetch(API_URL).then(r=>r.json()).then(j=>{
+    rawCards=j.data||[];
+    cards=rawCards.filter(c=>String(c.active).toUpperCase()!=="FALSE");
+    document.getElementById("splash").style.display="none";
+    render();
+  });
+}
 
-  el("quizResetBtn").onclick = () => {
-    setQuizStats(0, 0);
-    quizLocked = false;
-    showNextQuiz(true);
-  };
+function render(){
+  renderFilters();
+  renderPairs();
+}
 
-  el("sortAZBtn").onclick = () => {
-    appState.sortAZ = !appState.sortAZ;
-    localStorage.setItem(LS_KEY, JSON.stringify(appState));
-    updateSortButtonLabel();
-    renderPairs();
-  };
+function renderFilters(){
+  const cont=el("posChecks");
+  cont.innerHTML="";
+  const types=[...new Set(cards.map(c=>norm(c.pos)))];
+  types.forEach(p=>{
+    const lab=document.createElement("label");
+    lab.className="chip";
+    const cb=document.createElement("input");
+    cb.type="checkbox";
+    cb.checked=!state.pos||state.pos.includes(p);
+    cb.onchange=()=>{
+      state.pos=state.pos||[];
+      cb.checked?state.pos.push(p):state.pos=state.pos.filter(x=>x!==p);
+      save();renderPairs();
+    };
+    lab.append(cb,document.createTextNode(" "+(POS_LABELS[p]||p)));
+    cont.appendChild(lab);
+  });
+}
 
-  function refreshAllViews(){
-    renderPairs();
-    if (el("learnShell").style.display !== "none") showNextLearn();
-    if (el("quizShell").style.display !== "none") showNextQuiz(true);
-  }
+function filtered(){
+  return cards.filter(c=>{
+    if(state.pos && !state.pos.includes(norm(c.pos))) return false;
+    if(state.lesson && Number(c.due)>state.lesson) return false;
+    return true;
+  });
+}
 
-  async function loadFromSheet(){
-    setStatus("Loading…");
-    try {
-      const res = await fetch(API_URL);
-      const json = await res.json();
-      rawCards = (json.data || []).slice();
-      cards = rawCards.map(mergedCard).filter(c => c.active);
+function renderPairs(){
+  const box=el("pairs");
+  box.innerHTML="";
+  let arr=filtered();
+  if(state.sortAZ) arr.sort((a,b)=>a.front.localeCompare(b.front));
+  arr.slice(0,200).forEach(c=>{
+    const d=document.createElement("div");
+    d.className="item";
+    d.innerHTML=`<div class="muted">${c.pos} • les ${c.due}</div><b>${c.front}</b> ↔ ${c.back}`;
+    box.appendChild(d);
+  });
+}
 
-      renderPosChecks();
-      updateSortButtonLabel();
-      renderPairs();
+function nextLearn(){
+  const pool=filtered();
+  if(!pool.length) return;
+  const c=pool[Math.floor(Math.random()*pool.length)];
+  learnCurrent=c;
+  el("learnFront").textContent=c.front;
+  el("learnBack").textContent=c.back;
+  el("learnBack").style.display="none";
+  el("learnCard").style.display="block";
+}
 
-      setStatus(`Loaded: ${cards.length} woorden`);
-      activateTab(appState.activeTab || "overview");
-    } catch (e){
-      console.error(e);
-      setStatus("Load mislukt (check Apps Script deployment)");
-    }
-  }
+function nextQuiz(){
+  const pool=filtered();
+  if(pool.length<2) return;
+  quizCurrent=pool[Math.floor(Math.random()*pool.length)];
+  el("quizQuestion").textContent=quizCurrent.front;
+}
 
-  // init defaults
-  if (!appState.selectedPos) appState.selectedPos = Object.keys(POS_LABELS);
-  if (!appState.progress) appState.progress = {};
-  if (appState.lessonMax === undefined) appState.lessonMax = 1;
-  if (!appState.quiz) appState.quiz = { correct: 0, total: 0 };
-  if (!appState.activeTab) appState.activeTab = "overview";
-  localStorage.setItem(LS_KEY, JSON.stringify(appState));
+document.getElementById("sortAZBtn").onclick=()=>{
+  state.sortAZ=!state.sortAZ;
+  save();renderPairs();
+};
 
-  // persist tab selection
-  const _activateTab = activateTab;
-  activateTab = (name) => {
-    appState.activeTab = name;
-    localStorage.setItem(LS_KEY, JSON.stringify(appState));
-    _activateTab(name);
-  };
+document.getElementById("tabOverview").onclick=()=>activateTab("overview");
+document.getElementById("tabLearn").onclick=()=>activateTab("learn");
+document.getElementById("tabQuiz").onclick=()=>activateTab("quiz");
 
-  el("lessonMax").value = String(getLessonMax());
-  renderQuizStats();
-  renderPosChecks();
-  updateSortButtonLabel();
+document.getElementById("lessonMax").onchange=e=>{
+  state.lesson=Number(e.target.value);
+  save();renderPairs();
+};
 
-  loadFromSheet();
+document.getElementById("selAllBtn").onclick=()=>{state.pos=null;save();render();}
+document.getElementById("selNoneBtn").onclick=()=>{state.pos=[];save();render();}
+
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("sw.js");
+}
+
+load();
 </script>
 </body>
 </html>
