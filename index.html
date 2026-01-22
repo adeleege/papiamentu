@@ -24,34 +24,135 @@
       --shadow:0 1px 2px rgba(0,0,0,.05);
     }
     *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text)
+    }
     .wrap{max-width:860px;margin:0 auto;padding:16px}
     .tabs{display:flex;gap:8px;margin:10px 0 14px;flex-wrap:wrap}
-    .tab{padding:10px 14px;border:1px solid var(--border);border-radius:999px;background:#fff;cursor:pointer;font-weight:600;box-shadow:var(--shadow);user-select:none}
+    .tab{
+      padding:10px 14px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      background:#fff;
+      cursor:pointer;
+      font-weight:600;
+      box-shadow:var(--shadow);
+      user-select:none
+    }
     .tab.active{background:var(--accent-soft);border-color:rgba(37,99,235,.4)}
-    .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin:12px 0;box-shadow:var(--shadow)}
+    .card{
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:14px;
+      margin:12px 0;
+      box-shadow:var(--shadow)
+    }
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
     .muted{color:var(--muted);font-size:12px}
-    button{padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:#fff;font-weight:600;cursor:pointer}
+    button{
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:#fff;
+      font-weight:600;
+      cursor:pointer
+    }
     button.primary{background:var(--accent-soft);border-color:rgba(37,99,235,.4)}
     button:disabled{opacity:.55;cursor:not-allowed}
     input{padding:10px 12px;border-radius:12px;border:1px solid var(--border)}
-    .list{max-height:62vh;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;border:1px solid var(--border);border-radius:var(--radius);padding:8px;background:#fff}
+    .list{
+      max-height:62vh;
+      overflow:auto;
+      -webkit-overflow-scrolling:touch;
+      overscroll-behavior:contain;
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:8px;
+      background:#fff
+    }
     .item{padding:10px}
     .item + .item{border-top:1px solid #f3f4f6}
     .pill{padding:4px 10px;border:1px solid var(--border);border-radius:999px;font-size:12px;background:#fff}
-    .chip{display:flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--border);border-radius:999px;cursor:pointer;user-select:none;background:#fff}
+    .chip{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      cursor:pointer;
+      user-select:none;
+      background:#fff
+    }
     .chip input{margin:0}
     .opt{width:100%;text-align:left}
-    .ok{border-color:rgba(22,163,74,.5);background:rgba(22,163,74,.08)}
-    .bad{border-color:rgba(220,38,38,.5);background:rgba(220,38,38,.08)}
+
+    .ok{
+      border-color: rgba(22,163,74,.55) !important;
+      background: rgba(22,163,74,.10) !important;
+    }
+    .bad{
+      border-color: rgba(220,38,38,.55) !important;
+      background: rgba(220,38,38,.10) !important;
+    }
+
     .section-title{margin-top:10px}
-    #splash{position:fixed;inset:0;background:#f9fafb;display:flex;align-items:center;justify-content:center;z-index:9999}
+
+    #splash{
+      position:fixed;inset:0;background:#f9fafb;
+      display:flex;align-items:center;justify-content:center;
+      z-index:9999
+    }
     .splash-card{text-align:center}
     .splash-title{font-size:28px;font-weight:700}
     .splash-sub{color:#6b7280;margin-top:4px}
-    .loader{width:36px;height:36px;border:3px solid #e5e7eb;border-top-color:#2563eb;border-radius:50%;animation:spin 1s linear infinite;margin:16px auto 0}
+    .loader{
+      width:36px;height:36px;border:3px solid #e5e7eb;
+      border-top-color:#2563eb;border-radius:50%;
+      animation:spin 1s linear infinite;margin:16px auto 0
+    }
     @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* ===== Learning + Quiz UI boost ===== */
+    #learnFront, #quizQuestion { font-size: 1.25rem; line-height: 1.4; }
+    #learnBack { font-size: 1.15rem; }
+
+    #quizOptions button,
+    #learnRevealBtn, #learnNextBtn,
+    #quizNextBtn, #quizSkipBtn {
+      font-size: 1.05rem;
+      padding: 12px 14px;
+      margin-top: 6px;
+    }
+
+    /* Grotere leerkaart */
+    #learnCard { padding: 18px; }
+
+    /* Subtiele animaties */
+    @keyframes pop {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.015); }
+      100% { transform: scale(1); }
+    }
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      20% { transform: translateX(-4px); }
+      40% { transform: translateX(4px); }
+      60% { transform: translateX(-3px); }
+      80% { transform: translateX(3px); }
+      100% { transform: translateX(0); }
+    }
+    .pulse-ok { animation: pop 220ms ease-out; }
+    .shake-bad { animation: shake 260ms ease-in-out; }
+
+    @media (max-width: 480px) {
+      #learnFront, #quizQuestion { font-size: 1.3rem; }
+      #quizOptions button, #learnRevealBtn, #learnNextBtn { font-size: 1.1rem; padding: 14px; }
+    }
   </style>
 </head>
 
@@ -123,6 +224,10 @@
           <button id="learnRevealBtn" class="primary">Toon antwoord</button>
           <button id="learnNextBtn">Volgende</button>
         </div>
+
+        <div class="muted" style="margin-top:10px">
+          Tip: swipe <b>rechts</b> = antwoord • swipe <b>links</b> = volgende
+        </div>
       </div>
 
       <div class="card" id="learnEmpty" style="display:none">
@@ -168,7 +273,7 @@
 
 <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbxlXU7l80EPIpJJwRam1s9CdbH8PQ_PvQyftwTq55Qk51qkorrnBjwKXu2dxAp-Np_4/exec";
-  const LS_KEY = "papiamentu_app_v3";
+  const LS_KEY = "papiamentu_app_v4";
 
   let rawCards = [];
   let cards = [];
@@ -183,7 +288,6 @@
   if (state.sortAZ === undefined) state.sortAZ = false;
   if (!state.quiz) state.quiz = { correct: 0, total: 0 };
   if (!state.activeTab) state.activeTab = "overview";
-  // lesson range defaults (will be finalized after data load)
   if (state.lessonFrom === undefined || state.lessonFrom === null || state.lessonFrom === "" || Number.isNaN(Number(state.lessonFrom))) state.lessonFrom = 1;
   if (state.lessonTo === undefined || state.lessonTo === null || state.lessonTo === "" || Number.isNaN(Number(state.lessonTo))) state.lessonTo = 1;
   save();
@@ -208,6 +312,14 @@
     }[c]));
   }
 
+  function bump(elm, cls){
+    if (!elm) return;
+    elm.classList.remove(cls);
+    void elm.offsetWidth; // reflow to retrigger animation
+    elm.classList.add(cls);
+    setTimeout(() => elm.classList.remove(cls), 350);
+  }
+
   function lessonOf(card){
     const n = Number(card.due ?? 1);
     return Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1;
@@ -216,7 +328,6 @@
   function parseTags(raw){
     const s = String(raw ?? "").trim();
     if (!s) return [];
-    // split on comma or semicolon
     return s.split(/[;,]/g).map(t => t.trim()).filter(Boolean);
   }
 
@@ -227,9 +338,8 @@
       pos: norm(raw.pos) || "other",
       front: String(raw.front ?? ""),
       back: String(raw.back ?? ""),
-      due: raw.due, // lesson number
+      due: raw.due,
       active: String(raw.active ?? "TRUE").toUpperCase() !== "FALSE",
-      tagsRaw: raw.tags ?? raw.tag ?? "",
       tags: parseTags(raw.tags ?? raw.tag ?? "")
     };
   }
@@ -253,7 +363,7 @@
   }
 
   function selectedPosSet(){
-    if (!state.pos || state.pos.length === 0) return new Set(allTypes()); // empty => all
+    if (!state.pos || state.pos.length === 0) return new Set(allTypes());
     return new Set(state.pos.map(norm));
   }
 
@@ -271,7 +381,7 @@
 
   function matchesTags(card){
     const sel = selectedTagSet();
-    if (!sel) return true; // no tag filter => all
+    if (!sel) return true;
 
     const ts = card.tags || [];
     if (!ts.length) return sel.has(UNTAGGED);
@@ -305,7 +415,6 @@
       cb.type = "checkbox";
       cb.checked = sel.has(p);
       cb.onchange = () => {
-        // if empty => all, expand to all first
         if (!state.pos || state.pos.length === 0) state.pos = types.slice();
 
         if (cb.checked) {
@@ -313,7 +422,7 @@
         } else {
           state.pos = state.pos.filter(x => x !== p);
         }
-        // if user ends up selecting all, collapse back to empty (meaning "all")
+
         if (state.pos.length === types.length) state.pos = [];
         save();
         refreshAllViews();
@@ -346,10 +455,9 @@
 
       const cb = document.createElement("input");
       cb.type = "checkbox";
-      cb.checked = sel ? sel.has(t) : true; // no filter => all checked
+      cb.checked = sel ? sel.has(t) : true;
 
       cb.onchange = () => {
-        // if empty => all, expand to all first
         if (!state.tags || state.tags.length === 0) state.tags = tags.slice();
 
         if (cb.checked) {
@@ -357,7 +465,7 @@
         } else {
           state.tags = state.tags.filter(x => x !== t);
         }
-        // if user ends up selecting all, collapse back to empty ("all")
+
         if (state.tags.length === tags.length) state.tags = [];
         save();
         refreshAllViews();
@@ -421,7 +529,6 @@
     el("learnFront").textContent = c.front || "";
     el("learnBack").textContent = c.back || "";
     el("learnBack").style.display = "none";
-
     el("learnRevealBtn").style.display = "inline-block";
 
     const tagText = (c.tags && c.tags.length) ? c.tags.join(", ") : "—";
@@ -439,6 +546,11 @@
     if (!pool.length) return showLearnEmpty();
     const nxt = pool[Math.floor(Math.random() * pool.length)];
     showLearnCard(nxt);
+  }
+
+  function revealLearn(){
+    el("learnBack").style.display = "block";
+    el("learnRevealBtn").style.display = "none";
   }
 
   // ===== Quiz =====
@@ -467,7 +579,6 @@
     const correct = pool[Math.floor(Math.random() * pool.length)];
     const others = pool.filter(c => c.id !== correct.id);
 
-    // Prefer decoys with same POS, fallback to any
     const samePos = others.filter(c => norm(c.pos) === norm(correct.pos));
     const decoyPool = (samePos.length >= 3 ? samePos : others);
 
@@ -533,6 +644,8 @@
 
       buttons.forEach(b => { if (b.textContent === correct.back) b.classList.add("ok"); });
       el("quizFeedback").innerHTML = `<div class="muted">✅ Goed!</div>`;
+      bump(el("quizCard"), "pulse-ok");
+
       setTimeout(() => showNextQuiz(true), 350);
     } else {
       save();
@@ -541,11 +654,13 @@
       quizLocked = true;
       buttons.forEach(b => {
         if (b.textContent === selected) b.classList.add("bad");
-        if (b.textContent === correct.back) b.classList.add("ok");
+        if (b.textContent === correct.back) b.classList.add("ok"); // highlight correct
       });
+
       el("quizFeedback").innerHTML =
         `<div class="muted">❌ Fout. Juiste antwoord: <b>${escapeHtml(correct.back)}</b></div>`;
       el("quizNextBtn").style.display = "inline-block";
+      bump(el("quizCard"), "shake-bad");
     }
   }
 
@@ -590,10 +705,55 @@
   };
 
   el("learnRevealBtn").onclick = () => {
-    el("learnBack").style.display = "block";
-    el("learnRevealBtn").style.display = "none";
+    revealLearn();
+    bump(el("learnCard"), "pulse-ok");
   };
-  el("learnNextBtn").onclick = () => showNextLearn();
+  el("learnNextBtn").onclick = () => {
+    showNextLearn();
+    bump(el("learnCard"), "pulse-ok");
+  };
+
+  // Swipe on learn card: right=reveal, left=next
+  (function enableLearnSwipe(){
+    const card = document.getElementById("learnCard");
+    if (!card) return;
+
+    let x0 = null, y0 = null, t0 = 0;
+
+    card.addEventListener("touchstart", (e) => {
+      const t = e.touches[0];
+      x0 = t.clientX;
+      y0 = t.clientY;
+      t0 = Date.now();
+    }, { passive: true });
+
+    card.addEventListener("touchend", (e) => {
+      if (x0 === null || y0 === null) return;
+
+      const t = e.changedTouches[0];
+      const dx = t.clientX - x0;
+      const dy = t.clientY - y0;
+      const dt = Date.now() - t0;
+
+      x0 = y0 = null;
+
+      if (dt > 800) return;
+      if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy)) return;
+
+      if (dx > 0) {
+        // right: reveal (only if hidden)
+        const back = document.getElementById("learnBack");
+        if (back && back.style.display === "none") {
+          revealLearn();
+        }
+        bump(document.getElementById("learnCard"), "pulse-ok");
+      } else {
+        // left: next
+        showNextLearn();
+        bump(document.getElementById("learnCard"), "pulse-ok");
+      }
+    }, { passive: true });
+  })();
 
   el("quizResetBtn").onclick = () => {
     state.quiz = { correct: 0, total: 0 };
@@ -606,8 +766,8 @@
   el("quizSkipBtn").onclick = () => showNextQuiz(true);
 
   el("selAllBtn").onclick = () => {
-    state.pos = [];   // empty => all
-    state.tags = [];  // empty => all
+    state.pos = [];
+    state.tags = [];
     save();
     renderPosChecks();
     renderTagChecks();
@@ -615,8 +775,7 @@
   };
 
   el("selNoneBtn").onclick = () => {
-    // "Niets" means: select nothing in both (so result is empty)
-    // easiest: set impossible selections
+    // select nothing in both
     state.pos = ["__NONE_POS__"];
     state.tags = ["__NONE_TAG__"];
     save();
@@ -626,12 +785,10 @@
   };
 
   el("resetFiltersBtn").onclick = () => {
-    // Reset to: all POS, all tags, full lesson range, standard sort
     state.pos = [];
     state.tags = [];
     state.sortAZ = false;
 
-    // lesson range reset will use computed min/max if available
     state.lessonFrom = 1;
     state.lessonTo = (window.__maxLesson || 1);
 
@@ -675,13 +832,11 @@
       rawCards = (json.data || []).slice();
       cards = rawCards.map(mergedCard).filter(c => c.active);
 
-      // Compute min/max lesson from data
       const lessons = cards.map(lessonOf);
       const minLesson = lessons.length ? Math.min(...lessons) : 1;
       const maxLesson = lessons.length ? Math.max(...lessons) : 1;
       window.__maxLesson = maxLesson;
 
-      // If user has never set lessonTo, or it's out of range, clamp it
       if (!Number.isFinite(Number(state.lessonFrom)) || Number(state.lessonFrom) < minLesson) state.lessonFrom = minLesson;
       if (!Number.isFinite(Number(state.lessonTo)) || Number(state.lessonTo) < state.lessonFrom) state.lessonTo = maxLesson;
       if (Number(state.lessonTo) > maxLesson) state.lessonTo = maxLesson;
@@ -710,7 +865,7 @@
   updateSortButtonLabel();
   renderQuizStats();
 
-  // Register Service Worker (ensure sw.js exists in same folder as index.html)
+  // Register Service Worker (ensure sw.js exists next to index.html)
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("./sw.js").catch(err => {
@@ -723,6 +878,7 @@
 </script>
 </body>
 </html>
+
 
 
 
