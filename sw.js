@@ -1,4 +1,4 @@
-const CACHE_NAME = "papiamentu-v1";
+const CACHE_NAME = "papiamentu-v2";
 const FILES = [
   "./",
   "./index.html",
